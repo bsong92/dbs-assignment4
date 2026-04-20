@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { useUser } from "@clerk/nextjs";
 import { createPublicClient } from "@/lib/supabase-client";
 import { haversineKm } from "@/lib/haversine";
+
+const MapView = dynamic(() => import("./map-view"), { ssr: false });
 
 type Earthquake = {
   id: string;
@@ -194,7 +197,7 @@ export default function HomePage() {
   const [userLocations, setUserLocations] = useState<UserLocation[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
-  const [viewMode, setViewMode] = useState<"global" | "locations">("global");
+  const [viewMode, setViewMode] = useState<"global" | "locations" | "map">("global");
   const [minMagnitude, setMinMagnitude] = useState(0);
   const [sortBy, setSortBy] = useState<"recent" | "magnitude" | "distance">("recent");
   const [notifEnabled, setNotifEnabled] = useState(false);
@@ -396,6 +399,16 @@ export default function HomePage() {
           >
             Near My Locations
           </button>
+          <button
+            onClick={() => setViewMode("map")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              viewMode === "map"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+            }`}
+          >
+            Map
+          </button>
         </div>
       )}
 
@@ -516,12 +529,16 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Feed */}
-      <ul className="space-y-2">
-        {displayed.map((eq) => (
-          <EarthquakeCard key={eq.id} eq={eq} colors={magnitudeColor(eq.magnitude)} near={nearestLocation(eq, userLocations)} />
-        ))}
-      </ul>
+      {/* Map or Feed */}
+      {viewMode === "map" ? (
+        <MapView earthquakes={displayed} userLocations={userLocations} />
+      ) : (
+        <ul className="space-y-2">
+          {displayed.map((eq) => (
+            <EarthquakeCard key={eq.id} eq={eq} colors={magnitudeColor(eq.magnitude)} near={nearestLocation(eq, userLocations)} />
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
