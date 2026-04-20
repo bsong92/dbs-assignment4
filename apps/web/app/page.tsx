@@ -438,13 +438,35 @@ export default function HomePage() {
         {displayed.map((eq) => {
           const colors = magnitudeColor(eq.magnitude);
           const near = nearestLocation(eq, userLocations);
+
+          // Background gradient based on magnitude (geological theme)
+          let cardBg = "from-slate-900/70 to-slate-800/70";
+          if (eq.magnitude < 2.0) {
+            cardBg = "from-gray-900/70 to-slate-800/70";
+          } else if (eq.magnitude < 4.0) {
+            cardBg = "from-emerald-950/60 to-teal-900/60";
+          } else if (eq.magnitude < 5.0) {
+            cardBg = "from-yellow-950/60 to-orange-900/60";
+          } else if (eq.magnitude < 6.0) {
+            cardBg = "from-orange-950/70 to-amber-900/70";
+          } else {
+            cardBg = "from-red-950/70 to-orange-950/70";
+          }
+
           return (
             <li key={eq.id}>
               <a
                 href={eq.usgs_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-4 bg-gradient-to-r from-gray-900/60 to-gray-800/30 hover:from-gray-800/80 hover:to-gray-700/40 rounded-xl px-5 py-4 transition-all group border border-amber-600/20 hover:border-amber-500/40 glow-amber"
+                className={`flex items-center gap-4 bg-gradient-to-br ${cardBg} hover:shadow-2xl hover:shadow-amber-500/30 rounded-xl px-5 py-4 transition-all group border border-amber-600/20 hover:border-amber-500/40 glow-amber relative overflow-hidden`}
+                style={{
+                  backgroundImage: `
+                    radial-gradient(ellipse at 80% 20%, rgba(251, 146, 60, 0.15) 0%, transparent 40%),
+                    radial-gradient(ellipse at 10% 80%, rgba(34, 211, 238, 0.08) 0%, transparent 45%),
+                    linear-gradient(135deg, var(--tw-gradient-stops))
+                  `
+                }}
               >
                 {/* Magnitude badge */}
                 <div className={`shrink-0 text-center rounded-lg px-3 py-1.5 font-bold text-lg ring-2 min-w-[4rem] shadow-lg transition-all group-hover:scale-105 ${colors.badge}`}>
