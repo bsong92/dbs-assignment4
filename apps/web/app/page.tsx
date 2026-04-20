@@ -61,6 +61,50 @@ function matchesLocationCriteria(eq: Earthquake, locations: UserLocation[]): Use
   return null;
 }
 
+function SkeletonCard() {
+  return (
+    <div className="bg-gray-900 rounded-xl px-5 py-4 animate-pulse">
+      <div className="flex gap-4">
+        <div className="w-16 h-16 bg-gray-800 rounded"></div>
+        <div className="flex-1 space-y-2">
+          <div className="h-4 bg-gray-800 rounded w-3/4"></div>
+          <div className="h-3 bg-gray-800 rounded w-1/2"></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MagnitudeLegend() {
+  return (
+    <div className="bg-gray-900 rounded-xl p-4 mb-6">
+      <p className="text-sm font-semibold text-gray-300 mb-3">📊 Magnitude Scale</p>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-gray-500"></div>
+          <span className="text-xs text-gray-400">M &lt; 2.0</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-green-500"></div>
+          <span className="text-xs text-gray-400">2.0 - 3.9</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-yellow-500"></div>
+          <span className="text-xs text-gray-400">4.0 - 4.9</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-orange-500"></div>
+          <span className="text-xs text-gray-400">5.0 - 5.9</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-red-500"></div>
+          <span className="text-xs text-gray-400">6.0+</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function HomePage() {
   const { isLoaded, isSignedIn } = useUser();
   const [earthquakes, setEarthquakes] = useState<Earthquake[]>([]);
@@ -191,6 +235,22 @@ export default function HomePage() {
 
   return (
     <div>
+      {/* Hero section (only show when signed out or on first view) */}
+      {!isSignedIn && !loading && (
+        <div className="bg-gradient-to-r from-blue-900 to-purple-900 rounded-xl p-8 mb-8">
+          <h2 className="text-4xl font-bold text-white mb-2">Track Live Earthquakes</h2>
+          <p className="text-lg text-gray-300 mb-4">Save your favorite locations and get instant alerts when earthquakes occur nearby.</p>
+          <div className="flex gap-3">
+            <a href="/sign-up" className="px-6 py-2 bg-orange-600 hover:bg-orange-500 text-white font-medium rounded-lg transition-colors">
+              Sign up free
+            </a>
+            <a href="/sign-in" className="px-6 py-2 bg-gray-800 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors">
+              Sign in
+            </a>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-start justify-between mb-6 gap-4">
         <div>
@@ -199,7 +259,9 @@ export default function HomePage() {
           </h1>
           <p className="text-gray-400 text-sm mt-1">
             {viewMode === "locations"
-              ? `Filtering by ${userLocations.length} saved location${userLocations.length > 1 ? "s" : ""}`
+              ? userLocations.length > 0
+                ? `Filtering by ${userLocations.length} saved location${userLocations.length > 1 ? "s" : ""}`
+                : "Add locations to personalize your feed"
               : "All earthquakes worldwide"}
           </p>
         </div>
@@ -281,6 +343,9 @@ export default function HomePage() {
         </div>
       )}
 
+      {/* Magnitude legend */}
+      {!loading && earthquakes.length > 0 && <MagnitudeLegend />}
+
       {/* Filters: Magnitude slider + Sort */}
       <div className="bg-gray-900 rounded-xl p-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -320,26 +385,40 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Empty state for no matching quakes */}
-      {displayed.length === 0 && !loading && (
+      {/* Empty state: No saved locations */}
+      {isSignedIn && viewMode === "locations" && userLocations.length === 0 && !loading && (
         <div className="text-center py-16 text-gray-500">
-          <p className="text-4xl mb-3">🔕</p>
-          <p className="font-medium">
-            {viewMode === "locations" ? "No earthquakes near your locations." : "No earthquakes match your filters."}
-          </p>
-          <p className="text-sm mt-1">
-            {viewMode === "locations"
-              ? "Try lowering the magnitude slider, or adjust radius/magnitude in "
-              : "Try lowering the magnitude slider. "}
-            {viewMode === "locations" && (
-              <a href="/locations" className="text-orange-400 hover:text-orange-300">My Locations</a>
-            )}
-          </p>
+          <p className="text-5xl mb-3">📍</p>
+          <p className="text-lg font-medium text-white">No locations saved yet</p>
+          <p className="text-gray-400 mt-2 mb-6">Save your favorite places to see earthquakes near them in real time.</p>
+          <a href="/locations" className="inline-block px-6 py-2 bg-orange-600 hover:bg-orange-500 text-white font-medium rounded-lg transition-colors">
+            Add a location
+          </a>
         </div>
       )}
 
+      {/* Empty state: No matching earthquakes */}
+      {displayed.length === 0 && !loading && userLocations.length > 0 && (
+        <div className="text-center py-16 text-gray-500">
+          <p className="text-4xl mb-3">🌬️</p>
+          <p className="font-medium text-white">No earthquakes match your filters</p>
+          <p className="text-sm text-gray-400 mt-2">Try lowering the magnitude threshold or adjusting your location radius in </p>
+          {viewMode === "locations" && (
+            <a href="/locations" className="text-orange-400 hover:text-orange-300 font-medium">My Locations</a>
+          )}
+        </div>
+      )}
+
+      {/* Loading state with skeleton cards */}
       {loading && (
-        <div className="text-center py-20 text-gray-500">Loading earthquakes…</div>
+        <div className="space-y-2">
+          <div className="py-4">
+            <p className="text-gray-500 text-sm mb-4">Loading earthquakes…</p>
+          </div>
+          {[...Array(5)].map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
       )}
 
       {/* Feed */}
