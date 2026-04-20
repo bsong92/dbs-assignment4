@@ -19,10 +19,8 @@ export async function GET(request: Request) {
     const magnitude = parseFloat(searchParams.get("mag") || "3");
 
     if (!UNSPLASH_ACCESS_KEY) {
-      return Response.json(
-        { error: "Unsplash API key not configured" },
-        { status: 500 }
-      );
+      console.error("UNSPLASH_ACCESS_KEY not set");
+      return Response.json({ url: "" });
     }
 
     const cacheKey = `mag_${Math.floor(magnitude * 10)}`;
@@ -33,36 +31,36 @@ export async function GET(request: Request) {
     }
 
     const query = getMagnitudeQuery(magnitude);
+    console.log(`Fetching Unsplash image for: ${query}`);
+
     const response = await fetch(
       `https://api.unsplash.com/photos/random?query=${encodeURIComponent(query)}&w=1200&h=300&fit=crop`,
       {
         headers: {
           "Authorization": `Client-ID ${UNSPLASH_ACCESS_KEY}`,
         },
+        next: { revalidate: 3600 },
       }
     );
 
     if (!response.ok) {
-      return Response.json(
-        { error: "Failed to fetch from Unsplash" },
-        { status: response.status }
-      );
+      console.error(`Unsplash API error: ${response.status} - ${response.statusText}`);
+      return Response.json({ url: "" });
     }
 
     const data = await response.json();
-    const imageUrl = data.urls.regular;
+    const imageUrl = data.urls?.regular || "";
 
-    imageCache.set(cacheKey, {
-      url: imageUrl,
-      timestamp: Date.now(),
-    });
+    if (imageUrl) {
+      imageCache.set(cacheKey, {
+        url: imageUrl,
+        timestamp: Date.now(),
+      });
+    }
 
     return Response.json({ url: imageUrl });
   } catch (error) {
     console.error("Image fetch error:", error);
-    return Response.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return Response.json({ url: "" });
   }
 }
