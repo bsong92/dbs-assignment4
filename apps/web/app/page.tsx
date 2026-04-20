@@ -241,32 +241,42 @@ export default function HomePage() {
       )}
 
       {/* Filters: Magnitude slider + Sort */}
-      <div className="flex gap-4 mb-6 items-end flex-wrap">
-        <div className="flex-1 min-w-[200px]">
-          <label className="block text-xs font-medium text-gray-400 mb-2">
-            Min Magnitude: {minMagnitude.toFixed(1)}
-          </label>
-          <input
-            type="range"
-            min="0"
-            max="7"
-            step="0.1"
-            value={minMagnitude}
-            onChange={(e) => setMinMagnitude(parseFloat(e.target.value))}
-            className="w-full"
-          />
+      <div className="bg-gray-900 rounded-xl p-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-300 mb-2">
+              🔍 Minimum Magnitude
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min="0"
+                max="7"
+                step="0.1"
+                value={minMagnitude}
+                onChange={(e) => setMinMagnitude(parseFloat(e.target.value))}
+                className="flex-1"
+              />
+              <span className="text-white font-semibold min-w-[3rem]">M{minMagnitude.toFixed(1)}</span>
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-300 mb-2">
+              📊 Sort By
+            </label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as "recent" | "magnitude" | "distance")}
+              className="w-full px-3 py-2 bg-gray-800 text-white rounded-lg border border-gray-700 focus:outline-none"
+            >
+              <option value="recent">Recent</option>
+              <option value="magnitude">Magnitude (Strongest First)</option>
+              {viewMode === "locations" && userLocations.length > 0 && (
+                <option value="distance">Distance (Closest First)</option>
+              )}
+            </select>
+          </div>
         </div>
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as "recent" | "magnitude" | "distance")}
-          className="px-3 py-2 bg-gray-800 text-white text-sm rounded-lg border border-gray-700 focus:outline-none"
-        >
-          <option value="recent">Sort: Recent</option>
-          <option value="magnitude">Sort: Magnitude</option>
-          {viewMode === "locations" && userLocations.length > 0 && (
-            <option value="distance">Sort: Distance</option>
-          )}
-        </select>
       </div>
 
       {/* Empty state for no matching quakes */}

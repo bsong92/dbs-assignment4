@@ -236,19 +236,32 @@ export default function LocationsPage() {
       ) : (
         <ul className="space-y-3">
           {locations.map((loc) => (
-            <li key={loc.id} className="bg-gray-900 rounded-xl px-5 py-4 flex items-center justify-between gap-4">
-              <div>
-                <p className="font-medium text-base">{loc.label}</p>
-                <p className="text-sm text-gray-500 mt-0.5">
-                  {loc.lat.toFixed(3)}, {loc.lng.toFixed(3)} · {loc.radius_km} km radius · M{loc.min_magnitude}+
-                </p>
+            <li key={loc.id} className="bg-gray-900 rounded-xl px-5 py-4">
+              <div className="flex items-start justify-between gap-4 mb-2">
+                <div>
+                  <p className="font-bold text-lg text-white">{loc.label}</p>
+                </div>
+                <button
+                  onClick={() => deleteLocation(loc.id)}
+                  className="text-gray-500 hover:text-red-400 transition-colors text-base shrink-0"
+                >
+                  Remove
+                </button>
               </div>
-              <button
-                onClick={() => deleteLocation(loc.id)}
-                className="text-gray-500 hover:text-red-400 transition-colors text-base"
-              >
-                Remove
-              </button>
+              <div className="grid grid-cols-2 gap-2 text-sm text-gray-400">
+                <div>
+                  <span className="text-gray-500">📍 Coordinates:</span>
+                  <p>{loc.lat.toFixed(4)}, {loc.lng.toFixed(4)}</p>
+                </div>
+                <div>
+                  <span className="text-gray-500">📏 Radius:</span>
+                  <p>{loc.radius_km} km</p>
+                </div>
+                <div>
+                  <span className="text-gray-500">📊 Min Magnitude:</span>
+                  <p>M{loc.min_magnitude}+</p>
+                </div>
+              </div>
             </li>
           ))}
         </ul>
