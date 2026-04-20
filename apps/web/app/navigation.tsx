@@ -8,6 +8,7 @@ const navLinks = [
   { href: "/", label: "Live Feed" },
   { href: "/locations", label: "My Locations" },
   { href: "/stats", label: "Stats" },
+  { href: "/earthquakes-101", label: "Learn" },
 ];
 
 export default function Navigation() {
