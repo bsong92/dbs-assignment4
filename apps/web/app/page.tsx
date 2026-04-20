@@ -78,27 +78,27 @@ function SkeletonCard() {
 function MagnitudeLegend() {
   return (
     <div className="bg-gray-900 rounded-xl p-4 mb-6">
-      <p className="text-sm font-semibold text-gray-300 mb-3">📊 Magnitude Scale</p>
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+      <p className="text-base font-semibold text-gray-300 mb-3">📊 Magnitude Scale</p>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-gray-500"></div>
-          <span className="text-xs text-gray-400">M &lt; 2.0</span>
+          <div className="w-5 h-5 rounded bg-gray-500"></div>
+          <span className="text-sm text-gray-400">M &lt; 2.0</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-green-500"></div>
-          <span className="text-xs text-gray-400">2.0 - 3.9</span>
+          <div className="w-5 h-5 rounded bg-green-500"></div>
+          <span className="text-sm text-gray-400">2.0 - 3.9</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-yellow-500"></div>
-          <span className="text-xs text-gray-400">4.0 - 4.9</span>
+          <div className="w-5 h-5 rounded bg-yellow-500"></div>
+          <span className="text-sm text-gray-400">4.0 - 4.9</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-orange-500"></div>
-          <span className="text-xs text-gray-400">5.0 - 5.9</span>
+          <div className="w-5 h-5 rounded bg-orange-500"></div>
+          <span className="text-sm text-gray-400">5.0 - 5.9</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-red-500"></div>
-          <span className="text-xs text-gray-400">6.0+</span>
+          <div className="w-5 h-5 rounded bg-red-500"></div>
+          <span className="text-sm text-gray-400">6.0+</span>
         </div>
       </div>
     </div>
@@ -314,7 +314,13 @@ export default function HomePage() {
       {viewMode === "locations" && userLocations.length > 0 && (
         <div className="flex gap-2 mb-6 flex-wrap">
           <button
-            onClick={() => setSelectedLocationIds(userLocations.map((loc) => loc.id))}
+            onClick={() => {
+              if (selectedLocationIds.length === userLocations.length) {
+                setSelectedLocationIds([]);
+              } else {
+                setSelectedLocationIds(userLocations.map((loc) => loc.id));
+              }
+            }}
             className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
               selectedLocationIds.length === userLocations.length
                 ? "bg-purple-600 text-white"
