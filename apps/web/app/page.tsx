@@ -256,15 +256,19 @@ export default function HomePage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-6 gap-4">
         <div>
-          <h1 className="text-3xl font-bold">
+          <h1 className="text-3xl font-bold text-white">
             {viewMode === "locations" ? "Earthquakes Near Your Locations" : "Global Earthquake Feed"}
           </h1>
-          <p className="text-gray-400 text-sm mt-1">
+          <p className={`text-base mt-2 font-semibold ${
+            viewMode === "locations"
+              ? "text-gray-300"
+              : "text-amber-200"
+          }`}>
             {viewMode === "locations"
               ? userLocations.length > 0
                 ? `Filtering by ${userLocations.length} saved location${userLocations.length > 1 ? "s" : ""}`
                 : "Add locations to personalize your feed"
-              : "All earthquakes worldwide"}
+              : "Real-time seismic activity from around the world"}
           </p>
         </div>
         <div className="flex items-center gap-3 text-xs text-gray-500 shrink-0 mt-1">
