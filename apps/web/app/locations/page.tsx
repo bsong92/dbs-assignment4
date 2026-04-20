@@ -90,29 +90,29 @@ export default function LocationsPage() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-1">My Locations</h1>
-      <p className="text-gray-400 text-sm mb-8">
+      <h1 className="text-3xl font-bold mb-1">My Locations</h1>
+      <p className="text-gray-400 text-base mb-8">
         Earthquakes near these locations will appear at the top of your feed.
       </p>
 
       {/* Add form */}
       <form onSubmit={addLocation} className="bg-gray-900 rounded-xl p-6 mb-8 space-y-4">
-        <h2 className="font-semibold text-lg">Add a location</h2>
+        <h2 className="font-semibold text-xl">Add a location</h2>
 
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Label</label>
+          <label className="block text-base text-gray-400 mb-1">Label</label>
           <input
             value={label}
             onChange={(e) => setLabel(e.target.value)}
             placeholder="e.g. Chicago"
             required
-            className="w-full bg-gray-800 rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+            className="w-full bg-gray-800 rounded px-3 py-2 text-base text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
           />
         </div>
 
         <div className="flex gap-3">
           <div className="flex-1">
-            <label className="block text-sm text-gray-400 mb-1">Latitude</label>
+            <label className="block text-base text-gray-400 mb-1">Latitude</label>
             <input
               value={lat}
               onChange={(e) => setLat(e.target.value)}
@@ -120,11 +120,11 @@ export default function LocationsPage() {
               required
               type="number"
               step="any"
-              className="w-full bg-gray-800 rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+              className="w-full bg-gray-800 rounded px-3 py-2 text-base text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
             />
           </div>
           <div className="flex-1">
-            <label className="block text-sm text-gray-400 mb-1">Longitude</label>
+            <label className="block text-base text-gray-400 mb-1">Longitude</label>
             <input
               value={lng}
               onChange={(e) => setLng(e.target.value)}
@@ -132,7 +132,7 @@ export default function LocationsPage() {
               required
               type="number"
               step="any"
-              className="w-full bg-gray-800 rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+              className="w-full bg-gray-800 rounded px-3 py-2 text-base text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
             />
           </div>
         </div>
@@ -141,25 +141,25 @@ export default function LocationsPage() {
           type="button"
           onClick={useMyLocation}
           disabled={geoLoading}
-          className="text-sm text-orange-400 hover:text-orange-300 disabled:opacity-50 transition-colors"
+          className="text-base text-orange-400 hover:text-orange-300 disabled:opacity-50 transition-colors"
         >
           {geoLoading ? "Getting location…" : "📍 Use my current location"}
         </button>
 
         <div className="flex gap-3">
           <div className="flex-1">
-            <label className="block text-sm text-gray-400 mb-1">Radius (km)</label>
+            <label className="block text-base text-gray-400 mb-1">Radius (km)</label>
             <input
               value={radiusKm}
               onChange={(e) => setRadiusKm(e.target.value)}
               type="number"
               min="50"
               max="5000"
-              className="w-full bg-gray-800 rounded px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-orange-500"
+              className="w-full bg-gray-800 rounded px-3 py-2 text-base text-white focus:outline-none focus:ring-1 focus:ring-orange-500"
             />
           </div>
           <div className="flex-1">
-            <label className="block text-sm text-gray-400 mb-1">Min magnitude</label>
+            <label className="block text-base text-gray-400 mb-1">Min magnitude</label>
             <input
               value={minMag}
               onChange={(e) => setMinMag(e.target.value)}
@@ -167,17 +167,17 @@ export default function LocationsPage() {
               min="0"
               max="10"
               step="0.5"
-              className="w-full bg-gray-800 rounded px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-orange-500"
+              className="w-full bg-gray-800 rounded px-3 py-2 text-base text-white focus:outline-none focus:ring-1 focus:ring-orange-500"
             />
           </div>
         </div>
 
-        {error && <p className="text-red-400 text-sm">{error}</p>}
+        {error && <p className="text-red-400 text-base">{error}</p>}
 
         <button
           type="submit"
           disabled={saving}
-          className="w-full bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white font-medium py-2 rounded transition-colors"
+          className="w-full bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white font-medium py-3 rounded text-base transition-colors"
         >
           {saving ? "Saving…" : "Add location"}
         </button>
@@ -185,7 +185,7 @@ export default function LocationsPage() {
 
       {/* Saved locations */}
       {locations.length === 0 ? (
-        <p className="text-gray-500 text-sm text-center py-8">
+        <p className="text-gray-500 text-base text-center py-8">
           No locations saved yet. Add one above to get a personalized feed.
         </p>
       ) : (
@@ -193,14 +193,14 @@ export default function LocationsPage() {
           {locations.map((loc) => (
             <li key={loc.id} className="bg-gray-900 rounded-xl px-5 py-4 flex items-center justify-between gap-4">
               <div>
-                <p className="font-medium">{loc.label}</p>
-                <p className="text-xs text-gray-500 mt-0.5">
+                <p className="font-medium text-base">{loc.label}</p>
+                <p className="text-sm text-gray-500 mt-0.5">
                   {loc.lat.toFixed(3)}, {loc.lng.toFixed(3)} · {loc.radius_km} km radius · M{loc.min_magnitude}+
                 </p>
               </div>
               <button
                 onClick={() => deleteLocation(loc.id)}
-                className="text-gray-500 hover:text-red-400 transition-colors text-sm"
+                className="text-gray-500 hover:text-red-400 transition-colors text-base"
               >
                 Remove
               </button>

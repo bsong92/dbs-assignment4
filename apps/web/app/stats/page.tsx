@@ -92,13 +92,13 @@ export default function StatsPage() {
 
       {/* Magnitude distribution */}
       <div className="bg-gray-900 rounded-xl p-6 mb-8">
-        <h2 className="text-xl font-bold mb-4">Magnitude Distribution</h2>
+        <h2 className="text-2xl font-bold mb-4">Magnitude Distribution</h2>
         <div className="space-y-3">
           {Object.entries(magDist).map(([range, count]) => {
             const percent = earthquakes.length > 0 ? (count / earthquakes.length) * 100 : 0;
             return (
               <div key={range}>
-                <div className="flex justify-between text-sm mb-1">
+                <div className="flex justify-between text-base mb-1">
                   <span className="text-gray-300">M{range}</span>
                   <span className="text-gray-400">{count}</span>
                 </div>
@@ -116,10 +116,10 @@ export default function StatsPage() {
 
       {/* Top regions */}
       <div className="bg-gray-900 rounded-xl p-6">
-        <h2 className="text-xl font-bold mb-4">Most Active Regions</h2>
+        <h2 className="text-2xl font-bold mb-4">Most Active Regions</h2>
         <ul className="space-y-2">
           {topRegions.map(([region, count], idx) => (
-            <li key={region} className="flex items-center justify-between text-sm">
+            <li key={region} className="flex items-center justify-between text-base">
               <span className="text-gray-300">
                 {idx + 1}. {region}
               </span>

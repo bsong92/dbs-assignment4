@@ -17,7 +17,7 @@ export default function Navigation() {
     <nav className="sticky top-0 z-50 border-b border-gray-800 bg-gray-950/90 backdrop-blur-xl">
       <div className="max-w-5xl mx-auto px-4 sm:px-8 flex items-center justify-between h-16">
         <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-2 font-bold text-lg text-white">
+          <Link href="/" className="flex items-center gap-2 font-bold text-2xl text-white">
             <span>🌍</span>
             <span>Earthquake Tracker</span>
           </Link>
@@ -26,7 +26,7 @@ export default function Navigation() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded text-base font-medium transition-colors ${
                   pathname === link.href
                     ? "bg-gray-800 text-white"
                     : "text-gray-400 hover:text-white hover:bg-gray-800"
