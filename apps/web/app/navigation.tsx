@@ -7,6 +7,7 @@ import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 const navLinks = [
   { href: "/", label: "Live Feed" },
   { href: "/locations", label: "My Locations" },
+  { href: "/stats", label: "Stats" },
 ];
 
 export default function Navigation() {
