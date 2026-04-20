@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useUser } from "@clerk/nextjs";
 import { createPublicClient } from "@/lib/supabase-client";
 import { haversineKm } from "@/lib/haversine";
@@ -25,6 +25,27 @@ type UserLocation = {
   radius_km: number;
   min_magnitude: number;
 };
+
+const imageCache = new Map<string, string>();
+
+async function fetchEarthquakeImage(magnitude: number): Promise<string> {
+  const cacheKey = `mag_${Math.floor(magnitude * 10)}`;
+  if (imageCache.has(cacheKey)) {
+    return imageCache.get(cacheKey)!;
+  }
+
+  try {
+    const response = await fetch(`/api/earthquake-image?mag=${magnitude}`);
+    if (response.ok) {
+      const data = await response.json();
+      imageCache.set(cacheKey, data.url);
+      return data.url;
+    }
+  } catch (error) {
+    console.error("Failed to fetch earthquake image:", error);
+  }
+  return "";
+}
 
 function magnitudeColor(mag: number) {
   if (mag >= 6.0) return { dot: "bg-red-500", badge: "bg-red-900/60 text-red-300 ring-red-700" };
@@ -72,6 +93,65 @@ function SkeletonCard() {
         </div>
       </div>
     </div>
+  );
+}
+
+interface EarthquakeCardProps {
+  eq: Earthquake;
+  colors: ReturnType<typeof magnitudeColor>;
+  near: { label: string; distKm: number } | null;
+}
+
+function EarthquakeCard({ eq, colors, near }: EarthquakeCardProps) {
+  const [imageUrl, setImageUrl] = useState<string>("");
+
+  useEffect(() => {
+    fetchEarthquakeImage(eq.magnitude).then(setImageUrl);
+  }, [eq.magnitude]);
+
+  const bgStyle: React.CSSProperties = imageUrl
+    ? {
+        backgroundImage: `url(${imageUrl})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }
+    : {
+        backgroundImage: "linear-gradient(135deg, #1a4d6d 0%, #2a7a9d 40%, #1a3a4a 100%)",
+      };
+
+  return (
+    <li>
+      <a
+        href={eq.usgs_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-start gap-4 rounded-xl px-5 py-4 transition-all group border border-amber-600/20 hover:border-amber-500/40 overflow-hidden relative"
+        style={bgStyle}
+      >
+        {/* Dark overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/60 to-black/50"></div>
+
+        {/* Magnitude badge */}
+        <div className={`shrink-0 text-center rounded-lg px-3 py-1.5 font-bold text-lg ring-2 min-w-[4rem] shadow-lg relative z-10 ${colors.badge}`}>
+          M{eq.magnitude.toFixed(1)}
+        </div>
+
+        {/* Details */}
+        <div className="flex-1 min-w-0 relative z-10">
+          <p className="font-medium text-base truncate text-white">{eq.place}</p>
+          <p className="text-sm text-gray-300 mt-0.5">
+            {timeAgo(eq.occurred_at)} · {eq.depth_km.toFixed(0)} km deep
+            {near && (
+              <span className="ml-2 text-orange-300">
+                · {Math.round(near.distKm)} km from {near.label}
+              </span>
+            )}
+          </p>
+        </div>
+
+        <span className="text-gray-300 group-hover:text-gray-200 text-xs shrink-0 relative z-10">↗</span>
+      </a>
+    </li>
   );
 }
 
@@ -435,84 +515,9 @@ export default function HomePage() {
 
       {/* Feed */}
       <ul className="space-y-2">
-        {displayed.map((eq) => {
-          const colors = magnitudeColor(eq.magnitude);
-          const near = nearestLocation(eq, userLocations);
-
-          // Background gradient based on magnitude (geological theme)
-          let cardBg = "from-slate-900/70 to-slate-800/70";
-          if (eq.magnitude < 2.0) {
-            cardBg = "from-gray-900/70 to-slate-800/70";
-          } else if (eq.magnitude < 4.0) {
-            cardBg = "from-emerald-950/60 to-teal-900/60";
-          } else if (eq.magnitude < 5.0) {
-            cardBg = "from-yellow-950/60 to-orange-900/60";
-          } else if (eq.magnitude < 6.0) {
-            cardBg = "from-orange-950/70 to-amber-900/70";
-          } else {
-            cardBg = "from-red-950/70 to-orange-950/70";
-          }
-
-          // Geological image backgrounds based on magnitude
-          const imageIndex = Math.abs(eq.id.charCodeAt(0) + eq.magnitude) % 5;
-          let bgImage = "";
-
-          if (eq.magnitude < 2.0) {
-            // Ocean/deep geological
-            bgImage = "linear-gradient(135deg, #1a4d6d 0%, #2a7a9d 40%, #1a3a4a 100%)";
-          } else if (eq.magnitude < 4.0) {
-            // Mountain/valley
-            bgImage = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300'%3E%3Cdefs%3E%3ClinearGradient id='sky' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%231a5a6d;stop-opacity:1'/%3E%3Cstop offset='100%25' style='stop-color:%233a7a9d;stop-opacity:1'/%3E%3C/linearGradient%3E%3ClinearGradient id='earth' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%232a5a4d;stop-opacity:1'/%3E%3Cstop offset='100%25' style='stop-color:%231a3a2d;stop-opacity:1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='300' fill='url(%23sky)'/%3E%3Cpolygon points='0,150 200,80 400,120 600,60 800,100 1000,70 1200,120 1200,300 0,300' fill='%234a7a6d' opacity='0.8'/%3E%3Cpolygon points='0,180 250,120 500,140 750,100 1000,130 1200,160 1200,300 0,300' fill='%233a5a4d' opacity='0.6'/%3E%3C/svg%3E")`;
-          } else if (eq.magnitude < 5.0) {
-            // Desert/sand layers
-            bgImage = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300'%3E%3Cdefs%3E%3ClinearGradient id='sand' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23d4a04d;stop-opacity:1'/%3E%3Cstop offset='50%25' style='stop-color:%23c49030;stop-opacity:1'/%3E%3Cstop offset='100%25' style='stop-color:%23a47020;stop-opacity:1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='300' fill='url(%23sand)'/%3E%3Cpath d='M 0 150 Q 300 120 600 150 T 1200 150 L 1200 300 L 0 300' fill='%23964010' opacity='0.5'/%3E%3Cpath d='M 0 200 Q 400 170 800 200 T 1200 200 L 1200 300 L 0 300' fill='%23843800' opacity='0.4'/%3E%3C/svg%3E")`;
-          } else if (eq.magnitude < 6.0) {
-            // Volcanic/hot
-            bgImage = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300'%3E%3Cdefs%3E%3ClinearGradient id='lava' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23d94d0d;stop-opacity:1'/%3E%3Cstop offset='60%25' style='stop-color:%23c43800;stop-opacity:1'/%3E%3Cstop offset='100%25' style='stop-color:%238b2700;stop-opacity:1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='300' fill='url(%23lava)'/%3E%3Cpolygon points='300,200 600,80 900,200 1200,120 1200,300 0,300' fill='%235a1800' opacity='0.6'/%3E%3Ccircle cx='600' cy='100' r='40' fill='%23f9a825' opacity='0.7'/%3E%3C/svg%3E")`;
-          } else {
-            // Intense volcanic/cataclysm
-            bgImage = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300'%3E%3Cdefs%3E%3ClinearGradient id='intense' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23ff4500;stop-opacity:1'/%3E%3Cstop offset='50%25' style='stop-color:%23cc2200;stop-opacity:1'/%3E%3Cstop offset='100%25' style='stop-color:%23660000;stop-opacity:1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='300' fill='url(%23intense)'/%3E%3Cpolygon points='200,180 600,60 1000,180 1200,100 1200,300 0,300' fill='%23330000' opacity='0.7'/%3E%3Ccircle cx='300' cy='120' r='50' fill='%23ffaa00' opacity='0.8'/%3E%3Ccircle cx='900' cy='140' r='45' fill='%23ff8800' opacity='0.7'/%3E%3C/svg%3E")`;
-          }
-
-          return (
-            <li key={eq.id}>
-              <a
-                href={eq.usgs_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-start gap-4 rounded-xl px-5 py-4 transition-all group border border-amber-600/20 hover:border-amber-500/40 overflow-hidden relative"
-                style={{
-                  backgroundImage: bgImage,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center"
-                }}
-              >
-                {/* Dark overlay for text readability */}
-                <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/40"></div>
-
-                {/* Magnitude badge */}
-                <div className={`shrink-0 text-center rounded-lg px-3 py-1.5 font-bold text-lg ring-2 min-w-[4rem] shadow-lg relative z-10 ${colors.badge}`}>
-                  M{eq.magnitude.toFixed(1)}
-                </div>
-
-                {/* Details */}
-                <div className="flex-1 min-w-0 relative z-10">
-                  <p className="font-medium text-base truncate text-white">{eq.place}</p>
-                  <p className="text-sm text-gray-300 mt-0.5">
-                    {timeAgo(eq.occurred_at)} · {eq.depth_km.toFixed(0)} km deep
-                    {near && (
-                      <span className="ml-2 text-orange-300">
-                        · {Math.round(near.distKm)} km from {near.label}
-                      </span>
-                    )}
-                  </p>
-                </div>
-
-                <span className="text-gray-300 group-hover:text-gray-200 text-xs shrink-0 relative z-10">↗</span>
-              </a>
-            </li>
-          );
-        })}
+        {displayed.map((eq) => (
+          <EarthquakeCard key={eq.id} eq={eq} colors={magnitudeColor(eq.magnitude)} near={nearestLocation(eq, userLocations)} />
+        ))}
       </ul>
     </div>
   );
