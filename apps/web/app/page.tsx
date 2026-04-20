@@ -71,6 +71,7 @@ export default function HomePage() {
   const [minMagnitude, setMinMagnitude] = useState(0);
   const [sortBy, setSortBy] = useState<"recent" | "magnitude" | "distance">("recent");
   const [notifEnabled, setNotifEnabled] = useState(false);
+  const [selectedLocationIds, setSelectedLocationIds] = useState<string[]>([]);
 
   const supabase = createPublicClient();
 
@@ -101,6 +102,12 @@ export default function HomePage() {
   useEffect(() => {
     if (isLoaded) fetchLocations();
   }, [isLoaded, fetchLocations]);
+
+  useEffect(() => {
+    if (userLocations.length > 0 && selectedLocationIds.length === 0) {
+      setSelectedLocationIds(userLocations.map((loc) => loc.id));
+    }
+  }, [userLocations]);
 
   useEffect(() => {
     if (isSignedIn && userLocations.length > 0 && typeof window !== "undefined" && "Notification" in window) {
@@ -157,9 +164,10 @@ export default function HomePage() {
   }, []);
 
   // Filter based on view mode and magnitude
-  let filtered = (viewMode === "locations" && userLocations.length > 0
+  const activeLocations = userLocations.filter((loc) => selectedLocationIds.includes(loc.id));
+  let filtered = (viewMode === "locations" && activeLocations.length > 0
     ? earthquakes.filter((eq) =>
-        userLocations.some(
+        activeLocations.some(
           (loc) =>
             haversineKm(eq.lat, eq.lng, loc.lat, loc.lng) <= loc.radius_km &&
             eq.magnitude >= loc.min_magnitude
@@ -237,6 +245,39 @@ export default function HomePage() {
           >
             Near My Locations
           </button>
+        </div>
+      )}
+
+      {/* Location filter (only show in "Near My Locations" view) */}
+      {viewMode === "locations" && userLocations.length > 0 && (
+        <div className="flex gap-2 mb-6 flex-wrap">
+          <button
+            onClick={() => setSelectedLocationIds(userLocations.map((loc) => loc.id))}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              selectedLocationIds.length === userLocations.length
+                ? "bg-purple-600 text-white"
+                : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+            }`}
+          >
+            All Locations
+          </button>
+          {userLocations.map((loc) => (
+            <button
+              key={loc.id}
+              onClick={() => {
+                setSelectedLocationIds((prev) =>
+                  prev.includes(loc.id) ? prev.filter((id) => id !== loc.id) : [...prev, loc.id]
+                );
+              }}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                selectedLocationIds.includes(loc.id)
+                  ? "bg-orange-600 text-white"
+                  : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              }`}
+            >
+              📍 {loc.label}
+            </button>
+          ))}
         </div>
       )}
 
