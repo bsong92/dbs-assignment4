@@ -59,6 +59,8 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [viewMode, setViewMode] = useState<"global" | "locations">("global");
+  const [minMagnitude, setMinMagnitude] = useState(0);
+  const [sortBy, setSortBy] = useState<"recent" | "magnitude" | "distance">("recent");
 
   const supabase = createPublicClient();
 
@@ -120,8 +122,8 @@ export default function HomePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Filter based on view mode
-  const filtered = viewMode === "locations" && userLocations.length > 0
+  // Filter based on view mode and magnitude
+  let filtered = (viewMode === "locations" && userLocations.length > 0
     ? earthquakes.filter((eq) =>
         userLocations.some(
           (loc) =>
@@ -129,7 +131,19 @@ export default function HomePage() {
             eq.magnitude >= loc.min_magnitude
         )
       )
-    : earthquakes;
+    : earthquakes).filter((eq) => eq.magnitude >= minMagnitude);
+
+  // Sort
+  if (sortBy === "magnitude") {
+    filtered = [...filtered].sort((a, b) => b.magnitude - a.magnitude);
+  } else if (sortBy === "distance" && viewMode === "locations" && userLocations.length > 0) {
+    filtered = [...filtered].sort((a, b) => {
+      const distA = Math.min(...userLocations.map((loc) => haversineKm(a.lat, a.lng, loc.lat, loc.lng)));
+      const distB = Math.min(...userLocations.map((loc) => haversineKm(b.lat, b.lng, loc.lat, loc.lng)));
+      return distA - distB;
+    });
+  }
+  // "recent" is default (already sorted by occurred_at DESC from query)
 
   const displayed = filtered.slice(0, 50);
 
@@ -181,12 +195,50 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Empty state for signed-in users with locations but no matching quakes */}
-      {isSignedIn && userLocations.length > 0 && displayed.length === 0 && !loading && (
+      {/* Filters: Magnitude slider + Sort */}
+      <div className="flex gap-4 mb-6 items-end flex-wrap">
+        <div className="flex-1 min-w-[200px]">
+          <label className="block text-xs font-medium text-gray-400 mb-2">
+            Min Magnitude: {minMagnitude.toFixed(1)}
+          </label>
+          <input
+            type="range"
+            min="0"
+            max="7"
+            step="0.1"
+            value={minMagnitude}
+            onChange={(e) => setMinMagnitude(parseFloat(e.target.value))}
+            className="w-full"
+          />
+        </div>
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as "recent" | "magnitude" | "distance")}
+          className="px-3 py-2 bg-gray-800 text-white text-sm rounded-lg border border-gray-700 focus:outline-none"
+        >
+          <option value="recent">Sort: Recent</option>
+          <option value="magnitude">Sort: Magnitude</option>
+          {viewMode === "locations" && userLocations.length > 0 && (
+            <option value="distance">Sort: Distance</option>
+          )}
+        </select>
+      </div>
+
+      {/* Empty state for no matching quakes */}
+      {displayed.length === 0 && !loading && (
         <div className="text-center py-16 text-gray-500">
           <p className="text-4xl mb-3">🔕</p>
-          <p className="font-medium">No earthquakes near your locations recently.</p>
-          <p className="text-sm mt-1">Try increasing the radius or lowering the minimum magnitude in <a href="/locations" className="text-orange-400 hover:text-orange-300">My Locations</a>.</p>
+          <p className="font-medium">
+            {viewMode === "locations" ? "No earthquakes near your locations." : "No earthquakes match your filters."}
+          </p>
+          <p className="text-sm mt-1">
+            {viewMode === "locations"
+              ? "Try lowering the magnitude slider, or adjust radius/magnitude in "
+              : "Try lowering the magnitude slider. "}
+            {viewMode === "locations" && (
+              <a href="/locations" className="text-orange-400 hover:text-orange-300">My Locations</a>
+            )}
+          </p>
         </div>
       )}
 
