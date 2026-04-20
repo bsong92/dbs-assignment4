@@ -1,0 +1,211 @@
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import { useUser } from "@clerk/nextjs";
+import { createPublicClient } from "@/lib/supabase-client";
+import { haversineKm } from "@/lib/haversine";
+
+type Earthquake = {
+  id: string;
+  magnitude: number;
+  place: string;
+  lat: number;
+  lng: number;
+  depth_km: number;
+  occurred_at: string;
+  usgs_url: string;
+  distanceKm?: number;
+};
+
+type UserLocation = {
+  id: string;
+  label: string;
+  lat: number;
+  lng: number;
+  radius_km: number;
+  min_magnitude: number;
+};
+
+function magnitudeColor(mag: number) {
+  if (mag >= 6.0) return { dot: "bg-red-500", badge: "bg-red-900/60 text-red-300 ring-red-700" };
+  if (mag >= 5.0) return { dot: "bg-orange-500", badge: "bg-orange-900/60 text-orange-300 ring-orange-700" };
+  if (mag >= 4.0) return { dot: "bg-yellow-500", badge: "bg-yellow-900/60 text-yellow-300 ring-yellow-700" };
+  if (mag >= 2.0) return { dot: "bg-green-500", badge: "bg-green-900/60 text-green-300 ring-green-700" };
+  return { dot: "bg-gray-500", badge: "bg-gray-800 text-gray-400 ring-gray-700" };
+}
+
+function timeAgo(iso: string) {
+  const secs = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (secs < 60) return `${secs}s ago`;
+  if (secs < 3600) return `${Math.floor(secs / 60)}m ago`;
+  if (secs < 86400) return `${Math.floor(secs / 3600)}h ago`;
+  return `${Math.floor(secs / 86400)}d ago`;
+}
+
+function nearestLocation(eq: Earthquake, locations: UserLocation[]) {
+  if (!locations.length) return null;
+  let best: { label: string; distKm: number } | null = null;
+  for (const loc of locations) {
+    const d = haversineKm(eq.lat, eq.lng, loc.lat, loc.lng);
+    if (!best || d < best.distKm) best = { label: loc.label, distKm: d };
+  }
+  return best;
+}
+
+export default function HomePage() {
+  const { isLoaded, isSignedIn } = useUser();
+  const [earthquakes, setEarthquakes] = useState<Earthquake[]>([]);
+  const [userLocations, setUserLocations] = useState<UserLocation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+
+  const supabase = createPublicClient();
+
+  const fetchLocations = useCallback(async () => {
+    if (!isSignedIn) return;
+    const res = await fetch("/api/locations");
+    if (res.ok) setUserLocations(await res.json());
+  }, [isSignedIn]);
+
+  const fetchEarthquakes = useCallback(async () => {
+    const { data } = await supabase
+      .from("earthquakes")
+      .select("id,magnitude,place,lat,lng,depth_km,occurred_at,usgs_url")
+      .order("occurred_at", { ascending: false })
+      .limit(100);
+    if (data) {
+      setEarthquakes(data as Earthquake[]);
+      setLastUpdate(new Date());
+    }
+    setLoading(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    fetchEarthquakes();
+  }, [fetchEarthquakes]);
+
+  useEffect(() => {
+    if (isLoaded) fetchLocations();
+  }, [isLoaded, fetchLocations]);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("earthquakes-feed")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "earthquakes" },
+        (payload) => {
+          setEarthquakes((prev) => {
+            const updated = [payload.new as Earthquake, ...prev];
+            return updated.slice(0, 100);
+          });
+          setLastUpdate(new Date());
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "earthquakes" },
+        (payload) => {
+          setEarthquakes((prev) =>
+            prev.map((eq) => (eq.id === (payload.new as Earthquake).id ? (payload.new as Earthquake) : eq))
+          );
+          setLastUpdate(new Date());
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Filter if user has locations
+  const filtered = userLocations.length > 0
+    ? earthquakes.filter((eq) =>
+        userLocations.some(
+          (loc) =>
+            haversineKm(eq.lat, eq.lng, loc.lat, loc.lng) <= loc.radius_km &&
+            eq.magnitude >= loc.min_magnitude
+        )
+      )
+    : earthquakes;
+
+  const displayed = filtered.slice(0, 50);
+
+  return (
+    <div>
+      {/* Header */}
+      <div className="flex items-start justify-between mb-6 gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">
+            {isSignedIn && userLocations.length > 0 ? "Earthquakes Near Your Locations" : "Global Earthquake Feed"}
+          </h1>
+          <p className="text-gray-400 text-sm mt-1">
+            {isSignedIn && userLocations.length > 0
+              ? `Filtering by ${userLocations.length} saved location${userLocations.length > 1 ? "s" : ""}`
+              : isSignedIn
+              ? "Add locations to see a personalized feed"
+              : "Sign in to personalize your feed"}
+          </p>
+        </div>
+        {lastUpdate && (
+          <div className="flex items-center gap-1.5 text-xs text-gray-500 shrink-0 mt-1">
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            Live · {timeAgo(lastUpdate.toISOString())}
+          </div>
+        )}
+      </div>
+
+      {/* Empty state for signed-in users with locations but no matching quakes */}
+      {isSignedIn && userLocations.length > 0 && displayed.length === 0 && !loading && (
+        <div className="text-center py-16 text-gray-500">
+          <p className="text-4xl mb-3">🔕</p>
+          <p className="font-medium">No earthquakes near your locations recently.</p>
+          <p className="text-sm mt-1">Try increasing the radius or lowering the minimum magnitude in <a href="/locations" className="text-orange-400 hover:text-orange-300">My Locations</a>.</p>
+        </div>
+      )}
+
+      {loading && (
+        <div className="text-center py-20 text-gray-500">Loading earthquakes…</div>
+      )}
+
+      {/* Feed */}
+      <ul className="space-y-2">
+        {displayed.map((eq) => {
+          const colors = magnitudeColor(eq.magnitude);
+          const near = nearestLocation(eq, userLocations);
+          return (
+            <li key={eq.id}>
+              <a
+                href={eq.usgs_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-4 bg-gray-900 hover:bg-gray-800 rounded-xl px-5 py-4 transition-colors group"
+              >
+                {/* Magnitude badge */}
+                <div className={`shrink-0 text-center rounded-lg px-3 py-1.5 font-bold text-lg ring-1 min-w-[4rem] ${colors.badge}`}>
+                  M{eq.magnitude.toFixed(1)}
+                </div>
+
+                {/* Details */}
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm truncate text-white">{eq.place}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {timeAgo(eq.occurred_at)} · {eq.depth_km.toFixed(0)} km deep
+                    {near && (
+                      <span className="ml-2 text-orange-400">
+                        · {Math.round(near.distKm)} km from {near.label}
+                      </span>
+                    )}
+                  </p>
+                </div>
+
+                <span className="text-gray-600 group-hover:text-gray-400 text-xs shrink-0">↗</span>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
