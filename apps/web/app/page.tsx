@@ -28,14 +28,15 @@ type UserLocation = {
 
 const imageCache = new Map<string, string>();
 
-async function fetchEarthquakeImage(magnitude: number): Promise<string> {
-  const cacheKey = `mag_${Math.floor(magnitude * 10)}`;
+async function fetchEarthquakeImage(magnitude: number, earthquakeId: string): Promise<string> {
+  // Cache per earthquake ID (unique image per quake, not just by magnitude)
+  const cacheKey = `eq_${earthquakeId}`;
   if (imageCache.has(cacheKey)) {
     return imageCache.get(cacheKey)!;
   }
 
   try {
-    const response = await fetch(`/api/earthquake-image?mag=${magnitude}`);
+    const response = await fetch(`/api/earthquake-image?mag=${magnitude}&id=${encodeURIComponent(earthquakeId)}`);
     if (response.ok) {
       const data = await response.json();
       imageCache.set(cacheKey, data.url);
@@ -106,8 +107,8 @@ function EarthquakeCard({ eq, colors, near }: EarthquakeCardProps) {
   const [imageUrl, setImageUrl] = useState<string>("");
 
   useEffect(() => {
-    fetchEarthquakeImage(eq.magnitude).then(setImageUrl);
-  }, [eq.magnitude]);
+    fetchEarthquakeImage(eq.magnitude, eq.id).then(setImageUrl);
+  }, [eq.magnitude, eq.id]);
 
   const bgStyle: React.CSSProperties = imageUrl
     ? {

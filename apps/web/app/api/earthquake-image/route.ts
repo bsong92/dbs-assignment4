@@ -15,8 +15,9 @@ function getMagnitudeQuery(magnitude: number): string {
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const magnitude = parseFloat(searchParams.get("mag") || "3");
+    const url = new URL(request.url);
+    const magnitude = parseFloat(url.searchParams.get("mag") || "3");
+    const earthquakeId = url.searchParams.get("id") || `mag_${Math.floor(magnitude * 10)}`;
 
     console.log(`API Key set: ${!!UNSPLASH_ACCESS_KEY}, Key starts with: ${UNSPLASH_ACCESS_KEY?.substring(0, 5) || "MISSING"}`);
 
@@ -24,8 +25,7 @@ export async function GET(request: Request) {
       console.error("UNSPLASH_ACCESS_KEY not set - returning fallback");
       return Response.json({ url: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=1200&h=300&fit=crop" });
     }
-
-    const cacheKey = `mag_${Math.floor(magnitude * 10)}`;
+    const cacheKey = `eq_${earthquakeId}`;
     const cached = imageCache.get(cacheKey);
 
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
