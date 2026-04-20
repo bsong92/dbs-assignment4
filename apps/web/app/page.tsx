@@ -163,23 +163,23 @@ function MagnitudeLegend() {
     <div className="bg-gradient-to-r from-gray-900/80 to-blue-900/40 rounded-xl p-4 mb-6 border border-cyan-500/20 glow-cyan">
       <p className="text-base font-semibold text-cyan-300 mb-3">📊 Magnitude Scale</p>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 cursor-help" title="Micro: Barely felt, detected only by instruments">
           <div className="w-5 h-5 rounded bg-gradient-to-br from-gray-500 to-gray-600 shadow-lg"></div>
           <span className="text-sm text-gray-300">M &lt; 2.0</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 cursor-help" title="Minor: Often felt but rarely causes damage. May rattle dishes and windows.">
           <div className="w-5 h-5 rounded bg-gradient-to-br from-green-400 to-green-600 shadow-lg shadow-green-500/50"></div>
           <span className="text-sm text-green-300">2.0 - 3.9</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 cursor-help" title="Light: Felt by most people. Minor damage possible. Furniture may shift.">
           <div className="w-5 h-5 rounded bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-lg shadow-yellow-500/50"></div>
           <span className="text-sm text-yellow-300">4.0 - 4.9</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 cursor-help" title="Moderate: Strong shaking felt by everyone. Moderate damage. Buildings may suffer cracks.">
           <div className="w-5 h-5 rounded bg-gradient-to-br from-orange-400 to-orange-600 shadow-lg shadow-orange-500/50"></div>
           <span className="text-sm text-orange-300">5.0 - 5.9</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 cursor-help" title="Strong/Major: Violent shaking. Severe damage. Many buildings destroyed. Landslides possible.">
           <div className="w-5 h-5 rounded bg-gradient-to-br from-red-500 to-red-700 shadow-lg shadow-red-500/50"></div>
           <span className="text-sm text-red-300">6.0+</span>
         </div>
