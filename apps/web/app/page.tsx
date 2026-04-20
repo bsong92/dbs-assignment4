@@ -77,28 +77,28 @@ function SkeletonCard() {
 
 function MagnitudeLegend() {
   return (
-    <div className="bg-gray-900 rounded-xl p-4 mb-6">
-      <p className="text-base font-semibold text-gray-300 mb-3">📊 Magnitude Scale</p>
+    <div className="bg-gradient-to-r from-gray-900/80 to-blue-900/40 rounded-xl p-4 mb-6 border border-cyan-500/20 glow-cyan">
+      <p className="text-base font-semibold text-cyan-300 mb-3">📊 Magnitude Scale</p>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded bg-gray-500"></div>
-          <span className="text-sm text-gray-400">M &lt; 2.0</span>
+          <div className="w-5 h-5 rounded bg-gradient-to-br from-gray-500 to-gray-600 shadow-lg"></div>
+          <span className="text-sm text-gray-300">M &lt; 2.0</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded bg-green-500"></div>
-          <span className="text-sm text-gray-400">2.0 - 3.9</span>
+          <div className="w-5 h-5 rounded bg-gradient-to-br from-green-400 to-green-600 shadow-lg shadow-green-500/50"></div>
+          <span className="text-sm text-green-300">2.0 - 3.9</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded bg-yellow-500"></div>
-          <span className="text-sm text-gray-400">4.0 - 4.9</span>
+          <div className="w-5 h-5 rounded bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-lg shadow-yellow-500/50"></div>
+          <span className="text-sm text-yellow-300">4.0 - 4.9</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded bg-orange-500"></div>
-          <span className="text-sm text-gray-400">5.0 - 5.9</span>
+          <div className="w-5 h-5 rounded bg-gradient-to-br from-orange-400 to-orange-600 shadow-lg shadow-orange-500/50"></div>
+          <span className="text-sm text-orange-300">5.0 - 5.9</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded bg-red-500"></div>
-          <span className="text-sm text-gray-400">6.0+</span>
+          <div className="w-5 h-5 rounded bg-gradient-to-br from-red-500 to-red-700 shadow-lg shadow-red-500/50"></div>
+          <span className="text-sm text-red-300">6.0+</span>
         </div>
       </div>
     </div>
@@ -237,15 +237,17 @@ export default function HomePage() {
     <div>
       {/* Hero section (only show when signed out or on first view) */}
       {!isSignedIn && !loading && (
-        <div className="bg-gradient-to-r from-blue-900 to-purple-900 rounded-xl p-8 mb-8">
-          <h2 className="text-4xl font-bold text-white mb-2">Track Live Earthquakes</h2>
-          <p className="text-lg text-gray-300 mb-4">Save your favorite locations and get instant alerts when earthquakes occur nearby.</p>
+        <div className="bg-gradient-to-br from-amber-900/40 via-transparent to-orange-900/30 rounded-2xl p-8 mb-8 border border-amber-600/30 glow-amber">
+          <h2 className="text-4xl font-bold bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent mb-2">
+            Track Live Earthquakes Worldwide
+          </h2>
+          <p className="text-lg text-amber-100 mb-6">Save locations, get instant alerts, and stay informed about seismic activity near you.</p>
           <div className="flex gap-3">
-            <a href="/sign-up" className="px-6 py-2 bg-orange-600 hover:bg-orange-500 text-white font-medium rounded-lg transition-colors">
-              Sign up free
+            <a href="/sign-up" className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold rounded-lg transition-all shadow-lg shadow-amber-500/50">
+              Start Tracking Free
             </a>
-            <a href="/sign-in" className="px-6 py-2 bg-gray-800 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors">
-              Sign in
+            <a href="/sign-in" className="px-6 py-3 bg-cyan-900/40 hover:bg-cyan-900/60 text-cyan-200 font-medium rounded-lg transition-colors border border-cyan-500/30">
+              Sign In
             </a>
           </div>
         </div>
@@ -353,10 +355,10 @@ export default function HomePage() {
       {!loading && earthquakes.length > 0 && <MagnitudeLegend />}
 
       {/* Filters: Magnitude slider + Sort */}
-      <div className="bg-gray-900 rounded-xl p-4 mb-6">
+      <div className="bg-gradient-to-r from-cyan-900/30 via-gray-900/40 to-blue-900/30 rounded-xl p-4 mb-6 border border-cyan-500/30 glow-cyan">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-300 mb-2">
+            <label className="block text-sm font-semibold text-cyan-300 mb-2">
               🔍 Minimum Magnitude
             </label>
             <div className="flex items-center gap-3">
@@ -438,10 +440,10 @@ export default function HomePage() {
                 href={eq.usgs_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-4 bg-gray-900 hover:bg-gray-800 rounded-xl px-5 py-4 transition-colors group"
+                className="flex items-center gap-4 bg-gradient-to-r from-gray-900/60 to-gray-800/30 hover:from-gray-800/80 hover:to-gray-700/40 rounded-xl px-5 py-4 transition-all group border border-amber-600/20 hover:border-amber-500/40 glow-amber"
               >
                 {/* Magnitude badge */}
-                <div className={`shrink-0 text-center rounded-lg px-3 py-1.5 font-bold text-lg ring-1 min-w-[4rem] ${colors.badge}`}>
+                <div className={`shrink-0 text-center rounded-lg px-3 py-1.5 font-bold text-lg ring-2 min-w-[4rem] shadow-lg transition-all group-hover:scale-105 ${colors.badge}`}>
                   M{eq.magnitude.toFixed(1)}
                 </div>
 
