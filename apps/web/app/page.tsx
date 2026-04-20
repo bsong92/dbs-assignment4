@@ -58,6 +58,7 @@ export default function HomePage() {
   const [userLocations, setUserLocations] = useState<UserLocation[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const [viewMode, setViewMode] = useState<"global" | "locations">("global");
 
   const supabase = createPublicClient();
 
@@ -119,8 +120,8 @@ export default function HomePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Filter if user has locations
-  const filtered = userLocations.length > 0
+  // Filter based on view mode
+  const filtered = viewMode === "locations" && userLocations.length > 0
     ? earthquakes.filter((eq) =>
         userLocations.some(
           (loc) =>
@@ -138,14 +139,12 @@ export default function HomePage() {
       <div className="flex items-start justify-between mb-6 gap-4">
         <div>
           <h1 className="text-2xl font-bold">
-            {isSignedIn && userLocations.length > 0 ? "Earthquakes Near Your Locations" : "Global Earthquake Feed"}
+            {viewMode === "locations" ? "Earthquakes Near Your Locations" : "Global Earthquake Feed"}
           </h1>
           <p className="text-gray-400 text-sm mt-1">
-            {isSignedIn && userLocations.length > 0
+            {viewMode === "locations"
               ? `Filtering by ${userLocations.length} saved location${userLocations.length > 1 ? "s" : ""}`
-              : isSignedIn
-              ? "Add locations to see a personalized feed"
-              : "Sign in to personalize your feed"}
+              : "All earthquakes worldwide"}
           </p>
         </div>
         {lastUpdate && (
@@ -155,6 +154,32 @@ export default function HomePage() {
           </div>
         )}
       </div>
+
+      {/* View toggle (only show if signed in with locations) */}
+      {isSignedIn && userLocations.length > 0 && (
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setViewMode("global")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              viewMode === "global"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+            }`}
+          >
+            Live Feed
+          </button>
+          <button
+            onClick={() => setViewMode("locations")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              viewMode === "locations"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+            }`}
+          >
+            Near My Locations
+          </button>
+        </div>
+      )}
 
       {/* Empty state for signed-in users with locations but no matching quakes */}
       {isSignedIn && userLocations.length > 0 && displayed.length === 0 && !loading && (
