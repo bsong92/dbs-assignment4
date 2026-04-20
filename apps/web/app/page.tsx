@@ -152,7 +152,7 @@ export default function HomePage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-6 gap-4">
         <div>
-          <h1 className="text-2xl font-bold">
+          <h1 className="text-3xl font-bold">
             {viewMode === "locations" ? "Earthquakes Near Your Locations" : "Global Earthquake Feed"}
           </h1>
           <p className="text-gray-400 text-sm mt-1">
@@ -266,8 +266,8 @@ export default function HomePage() {
 
                 {/* Details */}
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate text-white">{eq.place}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="font-medium text-base truncate text-white">{eq.place}</p>
+                  <p className="text-sm text-gray-500 mt-0.5">
                     {timeAgo(eq.occurred_at)} · {eq.depth_km.toFixed(0)} km deep
                     {near && (
                       <span className="ml-2 text-orange-400">
