@@ -52,6 +52,15 @@ function nearestLocation(eq: Earthquake, locations: UserLocation[]) {
   return best;
 }
 
+function matchesLocationCriteria(eq: Earthquake, locations: UserLocation[]): UserLocation | null {
+  if (!locations.length) return null;
+  for (const loc of locations) {
+    const dist = haversineKm(eq.lat, eq.lng, loc.lat, loc.lng);
+    if (dist <= loc.radius_km && eq.magnitude >= loc.min_magnitude) return loc;
+  }
+  return null;
+}
+
 export default function HomePage() {
   const { isLoaded, isSignedIn } = useUser();
   const [earthquakes, setEarthquakes] = useState<Earthquake[]>([]);
@@ -61,6 +70,7 @@ export default function HomePage() {
   const [viewMode, setViewMode] = useState<"global" | "locations">("global");
   const [minMagnitude, setMinMagnitude] = useState(0);
   const [sortBy, setSortBy] = useState<"recent" | "magnitude" | "distance">("recent");
+  const [notifEnabled, setNotifEnabled] = useState(false);
 
   const supabase = createPublicClient();
 
@@ -93,17 +103,41 @@ export default function HomePage() {
   }, [isLoaded, fetchLocations]);
 
   useEffect(() => {
+    if (isSignedIn && userLocations.length > 0 && typeof window !== "undefined" && "Notification" in window) {
+      if (Notification.permission === "granted") {
+        setNotifEnabled(true);
+      } else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then((perm) => {
+          setNotifEnabled(perm === "granted");
+        });
+      }
+    }
+  }, [isSignedIn, userLocations.length]);
+
+  useEffect(() => {
     const channel = supabase
       .channel("earthquakes-feed")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "earthquakes" },
         (payload) => {
+          const eq = payload.new as Earthquake;
           setEarthquakes((prev) => {
-            const updated = [payload.new as Earthquake, ...prev];
+            const updated = [eq, ...prev];
             return updated.slice(0, 100);
           });
           setLastUpdate(new Date());
+
+          if (notifEnabled && userLocations.length > 0) {
+            const matchedLoc = matchesLocationCriteria(eq, userLocations);
+            if (matchedLoc && "Notification" in window) {
+              new Notification(`⚡ Earthquake M${eq.magnitude.toFixed(1)} near ${matchedLoc.label}`, {
+                body: `${eq.place} · ${eq.depth_km.toFixed(0)} km deep`,
+                icon: "🌍",
+                tag: eq.id,
+              });
+            }
+          }
         }
       )
       .on(
@@ -161,12 +195,23 @@ export default function HomePage() {
               : "All earthquakes worldwide"}
           </p>
         </div>
-        {lastUpdate && (
-          <div className="flex items-center gap-1.5 text-xs text-gray-500 shrink-0 mt-1">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            Live · {timeAgo(lastUpdate.toISOString())}
-          </div>
-        )}
+        <div className="flex items-center gap-3 text-xs text-gray-500 shrink-0 mt-1">
+          {isSignedIn && userLocations.length > 0 && (
+            <div
+              className={`px-2 py-1 rounded ${
+                notifEnabled ? "bg-green-900/30 text-green-400" : "bg-gray-800 text-gray-500"
+              }`}
+            >
+              {notifEnabled ? "🔔 Alerts on" : "🔕 Alerts off"}
+            </div>
+          )}
+          {lastUpdate && (
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              Live · {timeAgo(lastUpdate.toISOString())}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* View toggle (only show if signed in with locations) */}
