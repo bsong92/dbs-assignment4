@@ -19,6 +19,7 @@ export default function LocationsPage() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [label, setLabel] = useState("");
+  const [address, setAddress] = useState("");
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
   const [radiusKm, setRadiusKm] = useState("250");
@@ -52,6 +53,29 @@ export default function LocationsPage() {
         setGeoLoading(false);
       }
     );
+  }
+
+  async function geocodeAddress() {
+    if (!address.trim()) return;
+    setGeoLoading(true);
+    setError("");
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`
+      );
+      const data = await res.json();
+      if (data.length > 0) {
+        setLat(parseFloat(data[0].lat).toFixed(4));
+        setLng(parseFloat(data[0].lon).toFixed(4));
+        if (!label) setLabel(address);
+        setAddress("");
+      } else {
+        setError("Address not found. Try another search.");
+      }
+    } catch (err) {
+      setError("Could not search address. Please try again.");
+    }
+    setGeoLoading(false);
   }
 
   async function addLocation(e: React.FormEvent) {
@@ -108,6 +132,27 @@ export default function LocationsPage() {
             required
             className="w-full bg-gray-800 rounded px-3 py-2 text-base text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
           />
+        </div>
+
+        <div>
+          <label className="block text-base text-gray-400 mb-1">Search by address</label>
+          <div className="flex gap-2">
+            <input
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && geocodeAddress()}
+              placeholder="e.g. Seoul, South Korea"
+              className="flex-1 bg-gray-800 rounded px-3 py-2 text-base text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+            />
+            <button
+              type="button"
+              onClick={geocodeAddress}
+              disabled={geoLoading || !address.trim()}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded text-base transition-colors"
+            >
+              {geoLoading ? "Searching…" : "🔍"}
+            </button>
+          </div>
         </div>
 
         <div className="flex gap-3">
