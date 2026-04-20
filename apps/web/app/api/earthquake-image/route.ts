@@ -35,10 +35,8 @@ export async function GET(request: Request) {
     const query = getMagnitudeQuery(magnitude);
     console.log(`Fetching Unsplash image for: ${query} (earthquake: ${earthquakeId})`);
 
-    // Add earthquake ID to query to ensure different results for each quake
-    const uniqueQuery = `${query} ${earthquakeId.substring(0, 5)}`;
     const response = await fetch(
-      `https://api.unsplash.com/photos/random?query=${encodeURIComponent(uniqueQuery)}&w=1200&h=300&fit=crop`,
+      `https://api.unsplash.com/photos/random?query=${encodeURIComponent(query)}&w=1200&h=300&fit=crop`,
       {
         headers: {
           "Authorization": `Client-ID ${UNSPLASH_ACCESS_KEY}`,
