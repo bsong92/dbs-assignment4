@@ -114,9 +114,9 @@ export default function LocationsPage() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-3xl font-bold mb-1">My Locations</h1>
-      <p className="text-gray-400 text-base mb-8">
-        Earthquakes near these locations will appear at the top of your feed.
+      <h1 className="text-3xl font-bold text-white mb-2">My Locations</h1>
+      <p className="text-cyan-200 text-base font-semibold mb-8">
+        Save your favorite places and track earthquakes nearby in real time.
       </p>
 
       {/* Add form */}

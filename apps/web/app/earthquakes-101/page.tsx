@@ -3,9 +3,9 @@
 export default function Earthquakes101() {
   return (
     <div className="max-w-3xl mx-auto">
-      <h1 className="text-3xl font-bold mb-2">Earthquakes 101</h1>
-      <p className="text-gray-400 text-base mb-8">
-        Understanding earthquake magnitudes, what to expect, and how to stay safe.
+      <h1 className="text-3xl font-bold text-white mb-2">Earthquakes 101</h1>
+      <p className="text-green-200 text-base font-semibold mb-8">
+        Learn about earthquake science, what to expect, and how to stay safe.
       </p>
 
       {/* Magnitude Scale */}

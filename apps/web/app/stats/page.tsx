@@ -68,7 +68,10 @@ export default function StatsPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-8">Earthquake Statistics</h1>
+      <h1 className="text-3xl font-bold text-white mb-2">Earthquake Statistics</h1>
+      <p className="text-purple-200 text-base font-semibold mb-8">
+        Global seismic activity insights and trends.
+      </p>
 
       {/* Top stats cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
