@@ -18,9 +18,11 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const magnitude = parseFloat(searchParams.get("mag") || "3");
 
+    console.log(`API Key set: ${!!UNSPLASH_ACCESS_KEY}, Key starts with: ${UNSPLASH_ACCESS_KEY?.substring(0, 5) || "MISSING"}`);
+
     if (!UNSPLASH_ACCESS_KEY) {
-      console.error("UNSPLASH_ACCESS_KEY not set");
-      return Response.json({ url: "" });
+      console.error("UNSPLASH_ACCESS_KEY not set - returning fallback");
+      return Response.json({ url: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=1200&h=300&fit=crop" });
     }
 
     const cacheKey = `mag_${Math.floor(magnitude * 10)}`;
