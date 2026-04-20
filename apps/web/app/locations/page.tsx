@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 
@@ -28,16 +28,31 @@ export default function LocationsPage() {
   const [geoLoading, setGeoLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const fetchLocations = useCallback(async () => {
-    const res = await fetch("/api/locations");
-    if (res.ok) setLocations(await res.json());
-    setLoading(false);
-  }, []);
-
   useEffect(() => {
-    if (isLoaded && !isSignedIn) router.push("/sign-in");
-    if (isLoaded && isSignedIn) fetchLocations();
-  }, [isLoaded, isSignedIn, router, fetchLocations]);
+    if (!isLoaded) return;
+    if (!isSignedIn) {
+      router.push("/sign-in");
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadLocations() {
+      const res = await fetch("/api/locations");
+      if (!cancelled && res.ok) {
+        setLocations(await res.json());
+      }
+      if (!cancelled) {
+        setLoading(false);
+      }
+    }
+
+    void loadLocations();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoaded, isSignedIn, router]);
 
   function useMyLocation() {
     setGeoLoading(true);
@@ -72,7 +87,7 @@ export default function LocationsPage() {
       } else {
         setError("Address not found. Try another search.");
       }
-    } catch (err) {
+    } catch {
       setError("Could not search address. Please try again.");
     }
     setGeoLoading(false);
@@ -95,7 +110,10 @@ export default function LocationsPage() {
     });
     if (res.ok) {
       setLabel(""); setLat(""); setLng(""); setRadiusKm("250"); setMinMag("0");
-      await fetchLocations();
+      const refreshed = await fetch("/api/locations");
+      if (refreshed.ok) {
+        setLocations(await refreshed.json());
+      }
     } else {
       const { error: msg } = await res.json();
       setError(msg ?? "Failed to save location");

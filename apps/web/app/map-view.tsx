@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { MapContainer, TileLayer, CircleMarker, Circle, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 

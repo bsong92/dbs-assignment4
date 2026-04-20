@@ -16,10 +16,9 @@ export default function StatsPage() {
   const [earthquakes, setEarthquakes] = useState<Earthquake[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const supabase = createPublicClient();
-
   useEffect(() => {
     const fetchEarthquakes = async () => {
+      const supabase = createPublicClient();
       const { data } = await supabase
         .from("earthquakes")
         .select("id,magnitude,place,occurred_at")

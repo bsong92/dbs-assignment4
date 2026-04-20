@@ -62,9 +62,9 @@ export default function Earthquakes101() {
                   M{level.mag} — {level.name}
                 </h3>
               </div>
-              <div className="space-y-2 text-sm text-gray-300">
+                <div className="space-y-2 text-sm text-gray-300">
                 <div>
-                  <span className="font-medium text-gray-400">What you'll feel:</span> {level.feeling}
+                  <span className="font-medium text-gray-400">What you&apos;ll feel:</span> {level.feeling}
                 </div>
                 <div>
                   <span className="font-medium text-gray-400">What could happen:</span> {level.impact}
@@ -89,7 +89,7 @@ export default function Earthquakes101() {
               <li className="flex gap-3">
                 <span className="font-bold text-red-400 shrink-0">1.</span>
                 <span>
-                  <strong>DROP</strong> to your hands and knees immediately. Don't try to run.
+                  <strong>DROP</strong> to your hands and knees immediately. Don&apos;t try to run.
                 </span>
               </li>
               <li className="flex gap-3">

@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { createPublicClient } from "@/lib/supabase-client";
 import { haversineKm } from "@/lib/haversine";
@@ -203,52 +204,92 @@ export default function HomePage() {
   const [notifEnabled, setNotifEnabled] = useState(false);
   const [selectedLocationIds, setSelectedLocationIds] = useState<string[]>([]);
 
-  const supabase = createPublicClient();
-
-  const fetchLocations = useCallback(async () => {
-    if (!isSignedIn) return;
-    const res = await fetch("/api/locations");
-    if (res.ok) setUserLocations(await res.json());
-  }, [isSignedIn]);
-
-  const fetchEarthquakes = useCallback(async () => {
-    const { data } = await supabase
-      .from("earthquakes")
-      .select("id,magnitude,place,lat,lng,depth_km,occurred_at,usgs_url")
-      .order("occurred_at", { ascending: false })
-      .limit(100);
-    if (data) {
-      setEarthquakes(data as Earthquake[]);
-      setLastUpdate(new Date());
-    }
-    setLoading(false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const [supabase] = useState(() => createPublicClient());
 
   useEffect(() => {
-    fetchEarthquakes();
-  }, [fetchEarthquakes]);
+    let cancelled = false;
 
-  useEffect(() => {
-    if (isLoaded) fetchLocations();
-  }, [isLoaded, fetchLocations]);
+    async function loadEarthquakes() {
+      const { data } = await supabase
+        .from("earthquakes")
+        .select("id,magnitude,place,lat,lng,depth_km,occurred_at,usgs_url")
+        .order("occurred_at", { ascending: false })
+        .limit(100);
 
-  useEffect(() => {
-    if (userLocations.length > 0 && selectedLocationIds.length === 0) {
-      setSelectedLocationIds(userLocations.map((loc) => loc.id));
-    }
-  }, [userLocations]);
+      if (!cancelled && data) {
+        setEarthquakes(data as Earthquake[]);
+        setLastUpdate(new Date());
+      }
 
-  useEffect(() => {
-    if (isSignedIn && userLocations.length > 0 && typeof window !== "undefined" && "Notification" in window) {
-      if (Notification.permission === "granted") {
-        setNotifEnabled(true);
-      } else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then((perm) => {
-          setNotifEnabled(perm === "granted");
-        });
+      if (!cancelled) {
+        setLoading(false);
       }
     }
+
+    void loadEarthquakes();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+
+    let cancelled = false;
+
+    async function loadLocations() {
+      if (!isSignedIn) {
+        if (!cancelled) {
+          setUserLocations([]);
+          setSelectedLocationIds([]);
+        }
+        return;
+      }
+
+      const res = await fetch("/api/locations");
+      if (!cancelled && res.ok) {
+        const locations = (await res.json()) as UserLocation[];
+        setUserLocations(locations);
+        setSelectedLocationIds((prev) => (prev.length > 0 ? prev : locations.map((loc) => loc.id)));
+      }
+    }
+
+    void loadLocations();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoaded, isSignedIn]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function syncNotificationPermission() {
+      if (!(isSignedIn && userLocations.length > 0 && typeof window !== "undefined" && "Notification" in window)) {
+        if (!cancelled) setNotifEnabled(false);
+        return;
+      }
+
+      if (Notification.permission === "granted") {
+        if (!cancelled) setNotifEnabled(true);
+        return;
+      }
+
+      if (Notification.permission === "denied") {
+        if (!cancelled) setNotifEnabled(false);
+        return;
+      }
+
+      const perm = await Notification.requestPermission();
+      if (!cancelled) setNotifEnabled(perm === "granted");
+    }
+
+    void syncNotificationPermission();
+
+    return () => {
+      cancelled = true;
+    };
   }, [isSignedIn, userLocations.length]);
 
   useEffect(() => {
@@ -329,12 +370,12 @@ export default function HomePage() {
           </h2>
           <p className="text-lg text-amber-100 mb-6">Save locations, get instant alerts, and stay informed about seismic activity near you.</p>
           <div className="flex gap-3">
-            <a href="/sign-up" className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold rounded-lg transition-all shadow-lg shadow-amber-500/50">
+            <Link href="/sign-up" className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold rounded-lg transition-all shadow-lg shadow-amber-500/50">
               Start Tracking Free
-            </a>
-            <a href="/sign-in" className="px-6 py-3 bg-cyan-900/40 hover:bg-cyan-900/60 text-cyan-200 font-medium rounded-lg transition-colors border border-cyan-500/30">
+            </Link>
+            <Link href="/sign-in" className="px-6 py-3 bg-cyan-900/40 hover:bg-cyan-900/60 text-cyan-200 font-medium rounded-lg transition-colors border border-cyan-500/30">
               Sign In
-            </a>
+            </Link>
           </div>
         </div>
       )}
