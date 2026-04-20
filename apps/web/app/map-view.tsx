@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { MapContainer, TileLayer, CircleMarker, Circle, Popup } from "react-leaflet";
-import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 type Earthquake = {
@@ -51,18 +50,6 @@ function timeAgo(iso: string): string {
 }
 
 export default function MapView({ earthquakes, userLocations }: MapViewProps) {
-  useEffect(() => {
-    // Fix Leaflet icon URLs for Next.js
-    const DefaultIcon = L.icon({
-      iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
-      shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-      shadowSize: [41, 41],
-    });
-    L.Marker.prototype.setIcon(DefaultIcon);
-  }, []);
 
   return (
     <div className="rounded-xl overflow-hidden border border-amber-600/20">
