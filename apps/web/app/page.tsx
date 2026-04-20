@@ -453,31 +453,25 @@ export default function HomePage() {
             cardBg = "from-red-950/70 to-orange-950/70";
           }
 
-          // Card background based on magnitude
-          let cardGradient = "";
-          let cardIcon = "🌍";
-          let cardLabel = "Earthquake";
+          // Geological image backgrounds based on magnitude
+          const imageIndex = Math.abs(eq.id.charCodeAt(0) + eq.magnitude) % 5;
+          let bgImage = "";
 
           if (eq.magnitude < 2.0) {
-            cardGradient = "from-slate-800 via-slate-700 to-blue-900";
-            cardIcon = "◆";
-            cardLabel = "Micro Tremor";
+            // Ocean/deep geological
+            bgImage = "linear-gradient(135deg, #1a4d6d 0%, #2a7a9d 40%, #1a3a4a 100%)";
           } else if (eq.magnitude < 4.0) {
-            cardGradient = "from-teal-900 via-cyan-800 to-blue-900";
-            cardIcon = "〰️";
-            cardLabel = "Minor Quake";
+            // Mountain/valley
+            bgImage = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300'%3E%3Cdefs%3E%3ClinearGradient id='sky' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%231a5a6d;stop-opacity:1'/%3E%3Cstop offset='100%25' style='stop-color:%233a7a9d;stop-opacity:1'/%3E%3C/linearGradient%3E%3ClinearGradient id='earth' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%232a5a4d;stop-opacity:1'/%3E%3Cstop offset='100%25' style='stop-color:%231a3a2d;stop-opacity:1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='300' fill='url(%23sky)'/%3E%3Cpolygon points='0,150 200,80 400,120 600,60 800,100 1000,70 1200,120 1200,300 0,300' fill='%234a7a6d' opacity='0.8'/%3E%3Cpolygon points='0,180 250,120 500,140 750,100 1000,130 1200,160 1200,300 0,300' fill='%233a5a4d' opacity='0.6'/%3E%3C/svg%3E")`;
           } else if (eq.magnitude < 5.0) {
-            cardGradient = "from-yellow-900 via-amber-800 to-orange-900";
-            cardIcon = "⚠️";
-            cardLabel = "Light Quake";
+            // Desert/sand layers
+            bgImage = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300'%3E%3Cdefs%3E%3ClinearGradient id='sand' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23d4a04d;stop-opacity:1'/%3E%3Cstop offset='50%25' style='stop-color:%23c49030;stop-opacity:1'/%3E%3Cstop offset='100%25' style='stop-color:%23a47020;stop-opacity:1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='300' fill='url(%23sand)'/%3E%3Cpath d='M 0 150 Q 300 120 600 150 T 1200 150 L 1200 300 L 0 300' fill='%23964010' opacity='0.5'/%3E%3Cpath d='M 0 200 Q 400 170 800 200 T 1200 200 L 1200 300 L 0 300' fill='%23843800' opacity='0.4'/%3E%3C/svg%3E")`;
           } else if (eq.magnitude < 6.0) {
-            cardGradient = "from-orange-900 via-orange-800 to-red-900";
-            cardIcon = "🔥";
-            cardLabel = "Moderate Quake";
+            // Volcanic/hot
+            bgImage = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300'%3E%3Cdefs%3E%3ClinearGradient id='lava' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23d94d0d;stop-opacity:1'/%3E%3Cstop offset='60%25' style='stop-color:%23c43800;stop-opacity:1'/%3E%3Cstop offset='100%25' style='stop-color:%238b2700;stop-opacity:1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='300' fill='url(%23lava)'/%3E%3Cpolygon points='300,200 600,80 900,200 1200,120 1200,300 0,300' fill='%235a1800' opacity='0.6'/%3E%3Ccircle cx='600' cy='100' r='40' fill='%23f9a825' opacity='0.7'/%3E%3C/svg%3E")`;
           } else {
-            cardGradient = "from-red-950 via-orange-900 to-yellow-900";
-            cardIcon = "⚡";
-            cardLabel = "Major Quake";
+            // Intense volcanic/cataclysm
+            bgImage = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300'%3E%3Cdefs%3E%3ClinearGradient id='intense' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23ff4500;stop-opacity:1'/%3E%3Cstop offset='50%25' style='stop-color:%23cc2200;stop-opacity:1'/%3E%3Cstop offset='100%25' style='stop-color:%23660000;stop-opacity:1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='300' fill='url(%23intense)'/%3E%3Cpolygon points='200,180 600,60 1000,180 1200,100 1200,300 0,300' fill='%23330000' opacity='0.7'/%3E%3Ccircle cx='300' cy='120' r='50' fill='%23ffaa00' opacity='0.8'/%3E%3Ccircle cx='900' cy='140' r='45' fill='%23ff8800' opacity='0.7'/%3E%3C/svg%3E")`;
           }
 
           return (
@@ -486,52 +480,35 @@ export default function HomePage() {
                 href={eq.usgs_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`relative overflow-hidden rounded-xl border border-amber-600/30 hover:border-amber-500/60 transition-all group glow-amber hover:shadow-2xl hover:shadow-amber-500/40`}
+                className="flex items-start gap-4 rounded-xl px-5 py-4 transition-all group border border-amber-600/20 hover:border-amber-500/40 overflow-hidden relative"
+                style={{
+                  backgroundImage: bgImage,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center"
+                }}
               >
-                {/* Background with layered gradients */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${cardGradient} opacity-100`}></div>
+                {/* Dark overlay for text readability */}
+                <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/40"></div>
 
-                {/* Sci-fi overlay effects */}
-                <div className="absolute inset-0 opacity-30"
-                  style={{
-                    backgroundImage: `
-                      radial-gradient(circle at 20% 50%, rgba(251, 146, 60, 0.3) 0%, transparent 50%),
-                      radial-gradient(circle at 80% 80%, rgba(34, 211, 238, 0.2) 0%, transparent 50%)
-                    `
-                  }}>
+                {/* Magnitude badge */}
+                <div className={`shrink-0 text-center rounded-lg px-3 py-1.5 font-bold text-lg ring-2 min-w-[4rem] shadow-lg relative z-10 ${colors.badge}`}>
+                  M{eq.magnitude.toFixed(1)}
                 </div>
 
-                {/* Content */}
-                <div className="relative px-6 py-5 flex items-start gap-4">
-                  {/* Left section: Icon and label */}
-                  <div className="flex flex-col gap-1 shrink-0">
-                    <span className="text-3xl">{cardIcon}</span>
-                    <p className="text-sm font-semibold text-amber-200">{cardLabel}</p>
-                  </div>
-
-                  {/* Right section: Magnitude and details */}
-                  <div className="flex-1">
-                    <div className="flex items-baseline gap-3 mb-2">
-                      <span className={`text-2xl font-bold text-white drop-shadow-lg`}>
-                        M{eq.magnitude.toFixed(1)}
+                {/* Details */}
+                <div className="flex-1 min-w-0 relative z-10">
+                  <p className="font-medium text-base truncate text-white">{eq.place}</p>
+                  <p className="text-sm text-gray-300 mt-0.5">
+                    {timeAgo(eq.occurred_at)} · {eq.depth_km.toFixed(0)} km deep
+                    {near && (
+                      <span className="ml-2 text-orange-300">
+                        · {Math.round(near.distKm)} km from {near.label}
                       </span>
-                      <span className="text-base font-semibold text-white drop-shadow-lg">
-                        {eq.place}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-200 drop-shadow-md">
-                      {timeAgo(eq.occurred_at)} · {eq.depth_km.toFixed(0)} km deep
-                      {near && (
-                        <span className="ml-3 text-amber-300 font-medium">
-                          · {Math.round(near.distKm)} km from {near.label}
-                        </span>
-                      )}
-                    </p>
-                  </div>
-
-                  {/* External link indicator */}
-                  <span className="text-gray-300 group-hover:text-white text-lg shrink-0 drop-shadow-lg">↗</span>
+                    )}
+                  </p>
                 </div>
+
+                <span className="text-gray-300 group-hover:text-gray-200 text-xs shrink-0 relative z-10">↗</span>
               </a>
             </li>
           );
