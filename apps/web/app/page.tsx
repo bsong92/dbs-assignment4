@@ -453,40 +453,85 @@ export default function HomePage() {
             cardBg = "from-red-950/70 to-orange-950/70";
           }
 
+          // Card background based on magnitude
+          let cardGradient = "";
+          let cardIcon = "🌍";
+          let cardLabel = "Earthquake";
+
+          if (eq.magnitude < 2.0) {
+            cardGradient = "from-slate-800 via-slate-700 to-blue-900";
+            cardIcon = "◆";
+            cardLabel = "Micro Tremor";
+          } else if (eq.magnitude < 4.0) {
+            cardGradient = "from-teal-900 via-cyan-800 to-blue-900";
+            cardIcon = "〰️";
+            cardLabel = "Minor Quake";
+          } else if (eq.magnitude < 5.0) {
+            cardGradient = "from-yellow-900 via-amber-800 to-orange-900";
+            cardIcon = "⚠️";
+            cardLabel = "Light Quake";
+          } else if (eq.magnitude < 6.0) {
+            cardGradient = "from-orange-900 via-orange-800 to-red-900";
+            cardIcon = "🔥";
+            cardLabel = "Moderate Quake";
+          } else {
+            cardGradient = "from-red-950 via-orange-900 to-yellow-900";
+            cardIcon = "⚡";
+            cardLabel = "Major Quake";
+          }
+
           return (
             <li key={eq.id}>
               <a
                 href={eq.usgs_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`flex items-center gap-4 bg-gradient-to-br ${cardBg} hover:shadow-2xl hover:shadow-amber-500/30 rounded-xl px-5 py-4 transition-all group border border-amber-600/20 hover:border-amber-500/40 glow-amber relative overflow-hidden`}
-                style={{
-                  backgroundImage: `
-                    radial-gradient(ellipse at 80% 20%, rgba(251, 146, 60, 0.15) 0%, transparent 40%),
-                    radial-gradient(ellipse at 10% 80%, rgba(34, 211, 238, 0.08) 0%, transparent 45%),
-                    linear-gradient(135deg, var(--tw-gradient-stops))
-                  `
-                }}
+                className={`relative overflow-hidden rounded-xl border border-amber-600/30 hover:border-amber-500/60 transition-all group glow-amber hover:shadow-2xl hover:shadow-amber-500/40`}
               >
-                {/* Magnitude badge */}
-                <div className={`shrink-0 text-center rounded-lg px-3 py-1.5 font-bold text-lg ring-2 min-w-[4rem] shadow-lg transition-all group-hover:scale-105 ${colors.badge}`}>
-                  M{eq.magnitude.toFixed(1)}
+                {/* Background with layered gradients */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${cardGradient} opacity-100`}></div>
+
+                {/* Sci-fi overlay effects */}
+                <div className="absolute inset-0 opacity-30"
+                  style={{
+                    backgroundImage: `
+                      radial-gradient(circle at 20% 50%, rgba(251, 146, 60, 0.3) 0%, transparent 50%),
+                      radial-gradient(circle at 80% 80%, rgba(34, 211, 238, 0.2) 0%, transparent 50%)
+                    `
+                  }}>
                 </div>
 
-                {/* Details */}
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-base truncate text-white">{eq.place}</p>
-                  <p className="text-sm text-gray-500 mt-0.5">
-                    {timeAgo(eq.occurred_at)} · {eq.depth_km.toFixed(0)} km deep
-                    {near && (
-                      <span className="ml-2 text-orange-400">
-                        · {Math.round(near.distKm)} km from {near.label}
+                {/* Content */}
+                <div className="relative px-6 py-5 flex items-start gap-4">
+                  {/* Left section: Icon and label */}
+                  <div className="flex flex-col gap-1 shrink-0">
+                    <span className="text-3xl">{cardIcon}</span>
+                    <p className="text-sm font-semibold text-amber-200">{cardLabel}</p>
+                  </div>
+
+                  {/* Right section: Magnitude and details */}
+                  <div className="flex-1">
+                    <div className="flex items-baseline gap-3 mb-2">
+                      <span className={`text-2xl font-bold text-white drop-shadow-lg`}>
+                        M{eq.magnitude.toFixed(1)}
                       </span>
-                    )}
-                  </p>
-                </div>
+                      <span className="text-base font-semibold text-white drop-shadow-lg">
+                        {eq.place}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-200 drop-shadow-md">
+                      {timeAgo(eq.occurred_at)} · {eq.depth_km.toFixed(0)} km deep
+                      {near && (
+                        <span className="ml-3 text-amber-300 font-medium">
+                          · {Math.round(near.distKm)} km from {near.label}
+                        </span>
+                      )}
+                    </p>
+                  </div>
 
-                <span className="text-gray-600 group-hover:text-gray-400 text-xs shrink-0">↗</span>
+                  {/* External link indicator */}
+                  <span className="text-gray-300 group-hover:text-white text-lg shrink-0 drop-shadow-lg">↗</span>
+                </div>
               </a>
             </li>
           );
