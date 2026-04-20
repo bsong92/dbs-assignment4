@@ -125,31 +125,33 @@ function EarthquakeCard({ eq, colors, near }: EarthquakeCardProps) {
         href={eq.usgs_url}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-start gap-4 rounded-xl px-5 py-4 transition-all group border border-amber-600/20 hover:border-amber-500/40 overflow-hidden relative"
+        className="flex items-start gap-4 rounded-xl px-6 py-5 transition-all group border border-amber-600/20 hover:border-amber-500/40 overflow-hidden relative"
         style={bgStyle}
       >
         {/* Dark overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/60 to-black/50"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/70 to-black/60"></div>
 
         {/* Magnitude badge */}
-        <div className={`shrink-0 text-center rounded-lg px-3 py-1.5 font-bold text-lg ring-2 min-w-[4rem] shadow-lg relative z-10 ${colors.badge}`}>
+        <div className={`shrink-0 text-center rounded-lg px-3 py-2 font-black text-xl ring-2 min-w-[4.5rem] shadow-lg relative z-10 ${colors.badge}`}>
           M{eq.magnitude.toFixed(1)}
         </div>
 
         {/* Details */}
         <div className="flex-1 min-w-0 relative z-10">
-          <p className="font-medium text-base truncate text-white">{eq.place}</p>
-          <p className="text-sm text-gray-300 mt-0.5">
+          <p className="font-bold text-lg truncate text-white drop-shadow-md" style={{ textShadow: "0 2px 4px rgba(0,0,0,0.5)" }}>
+            {eq.place}
+          </p>
+          <p className="text-sm text-gray-200 mt-1 font-medium drop-shadow-md" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>
             {timeAgo(eq.occurred_at)} · {eq.depth_km.toFixed(0)} km deep
             {near && (
-              <span className="ml-2 text-orange-300">
+              <span className="ml-2 text-amber-300 font-semibold">
                 · {Math.round(near.distKm)} km from {near.label}
               </span>
             )}
           </p>
         </div>
 
-        <span className="text-gray-300 group-hover:text-gray-200 text-xs shrink-0 relative z-10">↗</span>
+        <span className="text-gray-300 group-hover:text-gray-200 text-lg shrink-0 relative z-10 font-bold">↗</span>
       </a>
     </li>
   );
