@@ -25,6 +25,29 @@ type UserLocation = {
 };
 
 type MagnitudeRange = "< 2.0" | "2.0 - 3.9" | "4.0 - 4.9" | "5.0 - 5.9" | "6.0+";
+type ClosestEarthquake = {
+  earthquake: Earthquake;
+  location: UserLocation;
+  distance: number;
+};
+
+function findClosestEarthquake(
+  earthquakes: Earthquake[],
+  userLocations: UserLocation[]
+): ClosestEarthquake | null {
+  let closest: ClosestEarthquake | null = null;
+
+  for (const earthquake of earthquakes) {
+    for (const location of userLocations) {
+      const distance = haversineKm(earthquake.lat, earthquake.lng, location.lat, location.lng);
+      if (!closest || distance < closest.distance) {
+        closest = { earthquake, location, distance };
+      }
+    }
+  }
+
+  return closest;
+}
 
 export default function StatsPage() {
   const { isLoaded, isSignedIn } = useUser();
@@ -67,7 +90,6 @@ export default function StatsPage() {
   // Your locations stats (if logged in)
   let nearbyCount = 0;
   let matchedCount = 0;
-  let closestEq: { earthquake: Earthquake; location: UserLocation; distance: number } | null = null;
 
   if (isSignedIn && userLocations.length > 0) {
     earthquakes.forEach(eq => {
@@ -79,12 +101,14 @@ export default function StatsPage() {
             matchedCount++;
           }
         }
-        if (!closestEq || dist < closestEq.distance) {
-          closestEq = { earthquake: eq, location: loc, distance: dist };
-        }
       });
     });
   }
+
+  const closestEqCard =
+    isSignedIn && userLocations.length > 0
+      ? findClosestEarthquake(earthquakes, userLocations)
+      : null;
 
   // Most active region (first 3 words of place name)
   const regions = new Map<string, number>();
@@ -174,11 +198,11 @@ export default function StatsPage() {
               <p className="text-3xl font-bold text-orange-400">{matchedCount}</p>
               <p className="text-xs text-gray-500">above your threshold</p>
             </div>
-            {closestEq ? (
+            {closestEqCard ? (
               <div>
                 <p className="text-sm text-gray-400 mb-1">Closest earthquake</p>
-                <p className="text-2xl font-bold text-cyan-400">M{closestEq.earthquake.magnitude.toFixed(1)}</p>
-                <p className="text-xs text-gray-500">{closestEq.distance.toFixed(0)}km from {closestEq.location.label}</p>
+                <p className="text-2xl font-bold text-cyan-400">M{closestEqCard.earthquake.magnitude.toFixed(1)}</p>
+                <p className="text-xs text-gray-500">{closestEqCard.distance.toFixed(0)}km from {closestEqCard.location.label}</p>
               </div>
             ) : null}
           </div>
