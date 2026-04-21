@@ -337,22 +337,24 @@ export default function HomePage() {
 
   // Filter based on view mode and magnitude
   const activeLocations = userLocations.filter((loc) => selectedLocationIds.includes(loc.id));
-  let filtered = (viewMode === "locations" && activeLocations.length > 0
-    ? earthquakes.filter((eq) =>
-        activeLocations.some(
-          (loc) =>
-            haversineKm(eq.lat, eq.lng, loc.lat, loc.lng) <= loc.radius_km &&
-            eq.magnitude >= loc.min_magnitude
+  let filtered = (
+    viewMode === "locations" && activeLocations.length > 0
+      ? earthquakes.filter((eq) =>
+          activeLocations.some(
+            (loc) =>
+              haversineKm(eq.lat, eq.lng, loc.lat, loc.lng) <= loc.radius_km &&
+              eq.magnitude >= loc.min_magnitude
+          )
         )
-      )
-    : viewMode === "map" && mapShowOnlyNearby && userLocations.length > 0
-    ? earthquakes.filter((eq) =>
-        userLocations.some(
-          (loc) =>
-            haversineKm(eq.lat, eq.lng, loc.lat, loc.lng) <= loc.radius_km
+      : viewMode === "map" && mapShowOnlyNearby && userLocations.length > 0
+      ? earthquakes.filter((eq) =>
+          userLocations.some(
+            (loc) =>
+              haversineKm(eq.lat, eq.lng, loc.lat, loc.lng) <= loc.radius_km
+          )
         )
-      )
-    : earthquakes).filter((eq) => eq.magnitude >= minMagnitude);
+      : earthquakes
+  ).filter((eq) => eq.magnitude >= minMagnitude);
 
   // Sort
   if (sortBy === "magnitude") {
