@@ -203,6 +203,7 @@ export default function HomePage() {
   const [sortBy, setSortBy] = useState<"recent" | "magnitude" | "distance">("recent");
   const [notifEnabled, setNotifEnabled] = useState(false);
   const [selectedLocationIds, setSelectedLocationIds] = useState<string[]>([]);
+  const [mapShowOnlyNearby, setMapShowOnlyNearby] = useState(false);
 
   const [supabase] = useState(() => createPublicClient());
 
@@ -344,6 +345,13 @@ export default function HomePage() {
             eq.magnitude >= loc.min_magnitude
         )
       )
+    : viewMode === "map" && mapShowOnlyNearby && userLocations.length > 0
+    ? earthquakes.filter((eq) =>
+        userLocations.some(
+          (loc) =>
+            haversineKm(eq.lat, eq.lng, loc.lat, loc.lng) <= loc.radius_km
+        )
+      )
     : earthquakes).filter((eq) => eq.magnitude >= minMagnitude);
 
   // Sort
@@ -449,6 +457,32 @@ export default function HomePage() {
             }`}
           >
             Map
+          </button>
+        </div>
+      )}
+
+      {/* Map filter (only show in map view) */}
+      {viewMode === "map" && userLocations.length > 0 && (
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setMapShowOnlyNearby(false)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              !mapShowOnlyNearby
+                ? "bg-cyan-600 text-white"
+                : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+            }`}
+          >
+            All Earthquakes
+          </button>
+          <button
+            onClick={() => setMapShowOnlyNearby(true)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              mapShowOnlyNearby
+                ? "bg-orange-600 text-white"
+                : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+            }`}
+          >
+            Near My Locations
           </button>
         </div>
       )}
