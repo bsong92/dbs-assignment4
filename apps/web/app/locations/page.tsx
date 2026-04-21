@@ -27,6 +27,10 @@ export default function LocationsPage() {
   const [saving, setSaving] = useState(false);
   const [geoLoading, setGeoLoading] = useState(false);
   const [error, setError] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editRadius, setEditRadius] = useState("");
+  const [editMinMag, setEditMinMag] = useState("");
+  const [editSaving, setEditSaving] = useState(false);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -119,6 +123,36 @@ export default function LocationsPage() {
       setError(msg ?? "Failed to save location");
     }
     setSaving(false);
+  }
+
+  function startEditing(loc: Location) {
+    setEditingId(loc.id);
+    setEditRadius(loc.radius_km.toString());
+    setEditMinMag(loc.min_magnitude.toString());
+  }
+
+  async function saveEdit() {
+    if (!editingId) return;
+    setEditSaving(true);
+    const res = await fetch(`/api/locations/${editingId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        radius_km: parseFloat(editRadius),
+        min_magnitude: parseFloat(editMinMag),
+      }),
+    });
+    if (res.ok) {
+      setLocations((prev) =>
+        prev.map((l) =>
+          l.id === editingId
+            ? { ...l, radius_km: parseFloat(editRadius), min_magnitude: parseFloat(editMinMag) }
+            : l
+        )
+      );
+      setEditingId(null);
+    }
+    setEditSaving(false);
   }
 
   async function deleteLocation(id: string) {
@@ -255,31 +289,93 @@ export default function LocationsPage() {
         <ul className="space-y-3">
           {locations.map((loc) => (
             <li key={loc.id} className="bg-gray-900 rounded-xl px-5 py-4">
-              <div className="flex items-start justify-between gap-4 mb-2">
-                <div>
-                  <p className="font-bold text-lg text-white">{loc.label}</p>
-                </div>
-                <button
-                  onClick={() => deleteLocation(loc.id)}
-                  className="text-gray-500 hover:text-red-400 transition-colors text-base shrink-0"
-                >
-                  Remove
-                </button>
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-sm text-gray-400">
-                <div>
-                  <span className="text-gray-500">📍 Coordinates:</span>
-                  <p>{loc.lat.toFixed(4)}, {loc.lng.toFixed(4)}</p>
-                </div>
-                <div>
-                  <span className="text-gray-500">📏 Radius:</span>
-                  <p>{loc.radius_km} km</p>
-                </div>
-                <div>
-                  <span className="text-gray-500">📊 Min Magnitude:</span>
-                  <p>M{loc.min_magnitude}+</p>
-                </div>
-              </div>
+              {editingId === loc.id ? (
+                <>
+                  <div className="flex items-start justify-between gap-4 mb-4">
+                    <p className="font-bold text-lg text-white">{loc.label}</p>
+                    <button
+                      onClick={() => setEditingId(null)}
+                      className="text-gray-500 hover:text-gray-400 transition-colors text-base"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm text-gray-400 mb-1">Radius (km)</label>
+                      <input
+                        value={editRadius}
+                        onChange={(e) => setEditRadius(e.target.value)}
+                        type="number"
+                        min="50"
+                        max="5000"
+                        className="w-full bg-gray-800 rounded px-3 py-2 text-base text-white focus:outline-none focus:ring-1 focus:ring-orange-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-400 mb-1">Min magnitude</label>
+                      <input
+                        value={editMinMag}
+                        onChange={(e) => setEditMinMag(e.target.value)}
+                        type="number"
+                        min="0"
+                        max="10"
+                        step="0.5"
+                        className="w-full bg-gray-800 rounded px-3 py-2 text-base text-white focus:outline-none focus:ring-1 focus:ring-orange-500"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={saveEdit}
+                        disabled={editSaving}
+                        className="flex-1 bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white font-medium py-2 rounded text-base transition-colors"
+                      >
+                        {editSaving ? "Saving…" : "Save"}
+                      </button>
+                      <button
+                        onClick={() => deleteLocation(loc.id)}
+                        className="text-gray-500 hover:text-red-400 transition-colors px-3 py-2 rounded border border-gray-700"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-start justify-between gap-4 mb-3">
+                    <p className="font-bold text-lg text-white">{loc.label}</p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => startEditing(loc)}
+                        className="text-gray-500 hover:text-orange-400 transition-colors text-base shrink-0"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => deleteLocation(loc.id)}
+                        className="text-gray-500 hover:text-red-400 transition-colors text-base shrink-0"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-sm text-gray-400">
+                    <div>
+                      <span className="text-gray-500">📍 Coordinates:</span>
+                      <p>{loc.lat.toFixed(4)}, {loc.lng.toFixed(4)}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">📏 Radius:</span>
+                      <p>{loc.radius_km} km</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">📊 Min Magnitude:</span>
+                      <p>M{loc.min_magnitude}+</p>
+                    </div>
+                  </div>
+                </>
+              )}
             </li>
           ))}
         </ul>
