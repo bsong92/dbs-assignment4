@@ -174,13 +174,13 @@ export default function StatsPage() {
               <p className="text-3xl font-bold text-orange-400">{matchedCount}</p>
               <p className="text-xs text-gray-500">above your threshold</p>
             </div>
-            {closestEq && (
+            {closestEq ? (
               <div>
                 <p className="text-sm text-gray-400 mb-1">Closest earthquake</p>
                 <p className="text-2xl font-bold text-cyan-400">M{closestEq.earthquake.magnitude.toFixed(1)}</p>
                 <p className="text-xs text-gray-500">{closestEq.distance.toFixed(0)}km from {closestEq.location.label}</p>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       )}
