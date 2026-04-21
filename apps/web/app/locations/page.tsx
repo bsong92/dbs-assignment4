@@ -31,6 +31,7 @@ export default function LocationsPage() {
   const [editRadius, setEditRadius] = useState("");
   const [editMinMag, setEditMinMag] = useState("");
   const [editSaving, setEditSaving] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -332,12 +333,29 @@ export default function LocationsPage() {
                       >
                         {editSaving ? "Saving…" : "Save"}
                       </button>
-                      <button
-                        onClick={() => deleteLocation(loc.id)}
-                        className="text-gray-500 hover:text-red-400 transition-colors px-3 py-2 rounded border border-gray-700"
-                      >
-                        🗑️
-                      </button>
+                      {confirmDeleteId === loc.id ? (
+                        <>
+                          <button
+                            onClick={() => deleteLocation(loc.id)}
+                            className="bg-red-600 hover:bg-red-500 text-white font-medium px-3 py-2 rounded text-base transition-colors"
+                          >
+                            Confirm
+                          </button>
+                          <button
+                            onClick={() => setConfirmDeleteId(null)}
+                            className="bg-gray-700 hover:bg-gray-600 text-white font-medium px-3 py-2 rounded text-base transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmDeleteId(loc.id)}
+                          className="text-gray-500 hover:text-red-400 transition-colors px-3 py-2 rounded border border-gray-700"
+                        >
+                          🗑️
+                        </button>
+                      )}
                     </div>
                   </div>
                 </>
@@ -345,19 +363,36 @@ export default function LocationsPage() {
                 <>
                   <div className="flex items-start justify-between gap-4 mb-3">
                     <p className="font-bold text-lg text-white">{loc.label}</p>
-                    <div className="flex gap-2">
+                    <div className="flex gap-6">
                       <button
                         onClick={() => startEditing(loc)}
                         className="text-gray-500 hover:text-orange-400 transition-colors text-base shrink-0"
                       >
                         Edit
                       </button>
-                      <button
-                        onClick={() => deleteLocation(loc.id)}
-                        className="text-gray-500 hover:text-red-400 transition-colors text-base shrink-0"
-                      >
-                        Remove
-                      </button>
+                      {confirmDeleteId === loc.id ? (
+                        <>
+                          <button
+                            onClick={() => deleteLocation(loc.id)}
+                            className="text-red-400 hover:text-red-300 transition-colors text-base shrink-0 font-medium"
+                          >
+                            Confirm delete?
+                          </button>
+                          <button
+                            onClick={() => setConfirmDeleteId(null)}
+                            className="text-gray-500 hover:text-gray-400 transition-colors text-base shrink-0"
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmDeleteId(loc.id)}
+                          className="text-gray-500 hover:text-red-400 transition-colors text-base shrink-0"
+                        >
+                          Remove
+                        </button>
+                      )}
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-sm text-gray-400">
